@@ -5,6 +5,8 @@ import type { BotUser } from '../types/bot.js';
 
 type ApiKeyStatusView = {
   primaryKeys: string[];
+  primaryKeyNotes: string[];
+  primaryKeyLevels: string[];
   fallbackKey: string;
   primaryCount: number;
   persistedDefault: string;
@@ -97,7 +99,11 @@ export const adminTemplate = {
 
   buildApiKeyStatusMessage(status: ApiKeyStatusView) {
     const keyboard = new InlineKeyboard().text('刷新 API Key', cb.adminApiKey());
-    const primaryLines = status.primaryKeys.map((key, index) => `${index + 1}. ${key}`);
+    const primaryLines = status.primaryKeys.map((key, index) => {
+      const note = status.primaryKeyNotes[index] ? `｜备注：${status.primaryKeyNotes[index]}` : '';
+      const level = status.primaryKeyLevels[index] ? `｜等级：${status.primaryKeyLevels[index]}` : '';
+      return `${index + 1}. ${key}${note}${level}`;
+    });
 
     return {
       text: [
@@ -116,6 +122,7 @@ export const adminTemplate = {
         '/set_fallback_api_key fallback_key',
         '/set_api_mode auto|manual',
         '/set_active_api_key 1',
+        '/set_api_key_note 1 生产VIP',
       ].join('\n'),
       keyboard,
     };

@@ -15,6 +15,7 @@ import { showApiKeyHandler } from '../handlers/message/show-api-key.handler.js';
 import { setFallbackApiKeyHandler } from '../handlers/message/set-fallback-api-key.handler.js';
 import { setApiModeHandler } from '../handlers/message/set-api-mode.handler.js';
 import { setActiveApiKeyHandler } from '../handlers/message/set-active-api-key.handler.js';
+import { setApiKeyNoteHandler } from '../handlers/message/set-api-key-note.handler.js';
 import { callbackRouter } from '../handlers/callback/callback-router.js';
 import { inlineQueryHandler } from '../handlers/inline/inline-query.handler.js';
 import { logger } from '../utils/logger.js';
@@ -55,6 +56,7 @@ export function registerHandlers(bot: Bot) {
   bot.command('set_fallback_api_key', setFallbackApiKeyHandler);
   bot.command('set_api_mode', setApiModeHandler);
   bot.command('set_active_api_key', setActiveApiKeyHandler);
+  bot.command('set_api_key_note', setApiKeyNoteHandler);
 
   // 普通文本消息：直接按关键词搜索（不影响 slash 命令）
   bot.on('message:text', keywordMessageHandler);

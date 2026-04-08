@@ -204,6 +204,17 @@ class HDHiveClient {
     return this.requestWithApiKeyRotation<HDHiveMeResponse>({ method: 'GET', url: '/api/open/me' });
   }
 
+  async getMeByApiKey(apiKey: string): Promise<HDHiveMeResponse> {
+    const res = await this.http.request<HDHiveMeResponse>({
+      method: 'GET',
+      url: '/api/open/me',
+      headers: {
+        'X-API-Key': apiKey,
+      },
+    });
+    return res.data;
+  }
+
   async getQuota(): Promise<HDHiveQuotaResponse> {
     return this.requestWithApiKeyRotation<HDHiveQuotaResponse>({ method: 'GET', url: '/api/open/quota' });
   }
