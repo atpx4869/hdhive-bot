@@ -8,6 +8,7 @@ type ApiKeyStatusView = {
   primaryKeyNotes: string[];
   primaryKeyLevels: string[];
   primaryKeyValidity: string[];
+  overallStatus: string;
   fallbackKey: string;
   primaryCount: number;
   persistedDefault: string;
@@ -126,6 +127,7 @@ export const adminTemplate = {
       text: [
         '🔐 <b>HDHive API Key 状态</b>',
         '',
+        `${status.overallStatus}`,
         `模式：${status.mode === 'auto' ? '自动轮转' : '手动切换'}`,
         `主 Key 数量：${status.primaryCount}`,
         ...primaryLines,

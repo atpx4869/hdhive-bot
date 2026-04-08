@@ -9,6 +9,11 @@ export type ApiKeyInspectionResult = {
   levelEmoji: '👑' | '🙂' | '❓';
 };
 
+export type ApiKeyOverallStatus = {
+  label: '当前整体可用' | '仅部分 Key 可用' | '当前不可用';
+  emoji: '✅' | '⚠️' | '❌';
+};
+
 export const apiKeyInspectionService = {
   async detectLevels(keys: string[]): Promise<ApiKeyInspectionResult[]> {
     return Promise.all(keys.map(async (key) => {
@@ -58,10 +63,21 @@ export const apiKeyInspectionService = {
     const status = apiKeyConfigService.getMaskedStatus();
     const realKeys = apiKeyConfigService.getPrimaryApiKeys();
     const inspections = await this.detectLevels(realKeys);
+
+    const hasValid = inspections.some(item => item.validStatus === '有效');
+    const hasPending = inspections.some(item => item.validStatus === '待确认');
+
+    const overall: ApiKeyOverallStatus = hasValid
+      ? { label: '当前整体可用', emoji: '✅' }
+      : hasPending
+        ? { label: '仅部分 Key 可用', emoji: '⚠️' }
+        : { label: '当前不可用', emoji: '❌' };
+
     return {
       ...status,
       primaryKeyLevels: inspections.map(item => `${item.levelEmoji} ${item.levelLabel}`),
       primaryKeyValidity: inspections.map(item => `${item.validEmoji} ${item.validStatus}`),
+      overallStatus: `${overall.emoji} ${overall.label}`,
     };
   },
 };
