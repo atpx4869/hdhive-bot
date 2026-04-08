@@ -114,10 +114,13 @@ export const adminTemplate = {
 
     status.primaryKeys.forEach((_, index) => {
       keyboard.text(`使用 ${index + 1}`, cb.adminApiActive(index + 1));
+      keyboard.text(`删除 ${index + 1}`, cb.adminApiDelete(index + 1));
       if ((index + 1) % 3 === 0 || index === status.primaryKeys.length - 1) {
         keyboard.row();
       }
     });
+
+    keyboard.text('清空兜底 Key', cb.adminApiClearFallback()).row();
 
     return {
       text: [
@@ -131,11 +134,8 @@ export const adminTemplate = {
         `兜底 Key：${status.fallbackKey}`,
         `默认 .env：${status.persistedDefault}`,
         '',
-        '设置命令：',
+        '常用命令：',
         '/set_api_key key_a,key_b,key_c',
-        '/set_fallback_api_key fallback_key',
-        '/set_api_mode auto|manual',
-        '/set_active_api_key 1',
         '/set_api_key_note 1 生产VIP',
       ].join('\n'),
       keyboard,

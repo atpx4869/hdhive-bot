@@ -177,6 +177,32 @@ export const apiKeyConfigService = {
     return key;
   },
 
+  deletePrimaryKeyByIndex(index: number): string | null {
+    const keys = [...this.getPrimaryApiKeys()];
+    const key = keys[index] ?? null;
+    if (!key) return null;
+    if (keys.length <= 1) return null;
+
+    keys.splice(index, 1);
+    botUserRepository.setSetting(PRIMARY_KEYS_SETTING, keys.join('\n'));
+
+    const currentActive = readRuntimeActiveKey();
+    if (!currentActive || currentActive === key || !keys.includes(currentActive)) {
+      botUserRepository.setSetting(ACTIVE_KEY_SETTING, keys[0]!);
+      writeEnvDefaultApiKey(keys[0]!);
+    }
+
+    const notes = readNotes();
+    delete notes[key];
+    botUserRepository.setSetting(NOTES_SETTING, JSON.stringify(notes));
+
+    return key;
+  },
+
+  clearFallbackApiKey(): void {
+    botUserRepository.setSetting(FALLBACK_KEY_SETTING, '');
+  },
+
   setApiKeyNoteByIndex(index: number, note: string): string | null {
     const keys = this.getPrimaryApiKeys();
     const key = keys[index] ?? null;

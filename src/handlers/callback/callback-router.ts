@@ -367,4 +367,26 @@ export async function callbackRouter(ctx: Context) {
     await ctx.answerCallbackQuery({ text: `已切换到第 ${parsed.index} 个 Active Key` });
     return;
   }
+
+  if (parsed.type === 'admin_api_delete') {
+    const deleted = apiKeyConfigService.deletePrimaryKeyByIndex(parsed.index - 1);
+    if (!deleted) {
+      await ctx.answerCallbackQuery({ text: '删除失败：至少保留 1 把主 Key', show_alert: true });
+      return;
+    }
+    const status = await apiKeyInspectionService.buildStatusWithLevels();
+    const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
+    await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    await ctx.answerCallbackQuery({ text: `已删除第 ${parsed.index} 个主 Key` });
+    return;
+  }
+
+  if (parsed.type === 'admin_api_clear_fallback') {
+    apiKeyConfigService.clearFallbackApiKey();
+    const status = await apiKeyInspectionService.buildStatusWithLevels();
+    const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
+    await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    await ctx.answerCallbackQuery({ text: '已清空兜底 Key' });
+    return;
+  }
 }
