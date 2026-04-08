@@ -115,6 +115,7 @@ export const adminTemplate = {
 
     status.primaryKeys.forEach((_, index) => {
       keyboard.text(`使用 ${index + 1}`, cb.adminApiActive(index + 1));
+      keyboard.text(`兜底 ${index + 1}`, cb.adminApiSetFallback(index + 1));
       keyboard.text(`删除 ${index + 1}`, cb.adminApiDelete(index + 1));
       if ((index + 1) % 3 === 0 || index === status.primaryKeys.length - 1) {
         keyboard.row();

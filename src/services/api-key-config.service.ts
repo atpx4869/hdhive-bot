@@ -164,6 +164,14 @@ export const apiKeyConfigService = {
     return normalized;
   },
 
+  setFallbackApiKeyByIndex(index: number): string | null {
+    const keys = this.getPrimaryApiKeys();
+    const key = keys[index] ?? null;
+    if (!key) return null;
+    botUserRepository.setSetting(FALLBACK_KEY_SETTING, key);
+    return key;
+  },
+
   setMode(mode: 'auto' | 'manual'): 'auto' | 'manual' {
     botUserRepository.setSetting(MODE_SETTING, mode);
     return mode;

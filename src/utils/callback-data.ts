@@ -30,6 +30,7 @@ export const cb = {
   adminApiMode: (mode: 'auto' | 'manual') => `admin:apimode${SEP}${mode}`,
   adminApiActive: (index: number) => `admin:apiactive${SEP}${index}`,
   adminApiDelete: (index: number) => `admin:apidelete${SEP}${index}`,
+  adminApiSetFallback: (index: number) => `admin:apisetfallback${SEP}${index}`,
   adminApiClearFallback: () => 'admin:apiclearfallback',
 };
 
@@ -54,6 +55,9 @@ export function parseCallbackData(data: string): ParsedCallback | null {
   }
   if (data.startsWith('admin:apidelete') && parts.length === 3) {
     return { type: 'admin_api_delete', index: Number(parts[2]) };
+  }
+  if (data.startsWith('admin:apisetfallback') && parts.length === 3) {
+    return { type: 'admin_api_set_fallback', index: Number(parts[2]) };
   }
 
   const ns = parts[0];

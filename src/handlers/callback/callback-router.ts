@@ -381,6 +381,19 @@ export async function callbackRouter(ctx: Context) {
     return;
   }
 
+  if (parsed.type === 'admin_api_set_fallback') {
+    const selected = apiKeyConfigService.setFallbackApiKeyByIndex(parsed.index - 1);
+    if (!selected) {
+      await ctx.answerCallbackQuery({ text: '无效序号', show_alert: true });
+      return;
+    }
+    const status = await apiKeyInspectionService.buildStatusWithLevels();
+    const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
+    await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    await ctx.answerCallbackQuery({ text: `已将第 ${parsed.index} 个主 Key 设为兜底` });
+    return;
+  }
+
   if (parsed.type === 'admin_api_clear_fallback') {
     apiKeyConfigService.clearFallbackApiKey();
     const status = await apiKeyInspectionService.buildStatusWithLevels();
