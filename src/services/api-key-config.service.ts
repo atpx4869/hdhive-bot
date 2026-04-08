@@ -135,6 +135,7 @@ export const apiKeyConfigService = {
       primaryKeys: primaryKeys.map(maskApiKey),
       primaryKeyNotes: primaryKeys.map(key => notes[key] ?? ''),
       primaryKeyLevels: primaryKeys.map(() => '未知'),
+      primaryKeyValidity: primaryKeys.map(() => '⚠️ 待确认'),
       fallbackKey: maskApiKey(fallbackKey),
       primaryCount: primaryKeys.length,
       persistedDefault: maskApiKey(this.getApiKey()),

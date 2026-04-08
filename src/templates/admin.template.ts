@@ -7,6 +7,7 @@ type ApiKeyStatusView = {
   primaryKeys: string[];
   primaryKeyNotes: string[];
   primaryKeyLevels: string[];
+  primaryKeyValidity: string[];
   fallbackKey: string;
   primaryCount: number;
   persistedDefault: string;
@@ -106,8 +107,9 @@ export const adminTemplate = {
     const primaryLines = status.primaryKeys.map((key, index) => {
       const isActive = key === status.activeKey;
       const note = status.primaryKeyNotes[index] ? `｜备注：${status.primaryKeyNotes[index]}` : '';
+      const validity = status.primaryKeyValidity[index] ? `｜${status.primaryKeyValidity[index]}` : '';
       const level = status.primaryKeyLevels[index] ? `｜等级：${status.primaryKeyLevels[index]}` : '';
-      return `${isActive ? '👉 ' : ''}${index + 1}. ${key}${note}${level}`;
+      return `${isActive ? '👉 ' : ''}${index + 1}. ${key}${validity}${level}${note}`;
     });
 
     status.primaryKeys.forEach((_, index) => {
