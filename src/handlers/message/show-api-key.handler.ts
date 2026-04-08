@@ -3,7 +3,7 @@ import { authService } from '../../services/auth.service.js';
 import { errorTemplate } from '../../templates/error.template.js';
 import { adminTemplate } from '../../templates/admin.template.js';
 import { getTelegramUserId } from '../../utils/guards.js';
-import { apiKeyConfigService } from '../../services/api-key-config.service.js';
+import { apiKeyInspectionService } from '../../services/api-key-inspection.service.js';
 
 export async function showApiKeyHandler(ctx: Context) {
   const telegramUserId = getTelegramUserId(ctx);
@@ -13,7 +13,7 @@ export async function showApiKeyHandler(ctx: Context) {
     return;
   }
 
-  const status = apiKeyConfigService.getMaskedStatus();
-  const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
-  await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
+  const merged = await apiKeyInspectionService.buildStatusWithLevels();
+  const rendered = adminTemplate.buildApiKeyStatusMessage(merged);
+  await ctx.reply(rendered.text, { parse_mode: 'HTML', reply_markup: rendered.keyboard });
 }

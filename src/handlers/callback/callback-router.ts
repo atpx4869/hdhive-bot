@@ -18,6 +18,7 @@ import { env } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
 import { safeEditMessageText } from '../../utils/telegram-safe.js';
 import { forwardBotConfigService } from '../../services/forward-bot-config.service.js';
+import { apiKeyInspectionService } from '../../services/api-key-inspection.service.js';
 import { apiKeyConfigService } from '../../services/api-key-config.service.js';
 
 export async function callbackRouter(ctx: Context) {
@@ -336,7 +337,7 @@ export async function callbackRouter(ctx: Context) {
   }
 
   if (parsed.type === 'admin_api_key') {
-    const status = apiKeyConfigService.getMaskedStatus();
+    const status = await apiKeyInspectionService.buildStatusWithLevels();
     const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
     await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
     return;

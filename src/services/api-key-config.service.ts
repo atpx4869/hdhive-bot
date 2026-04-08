@@ -7,6 +7,7 @@ const PRIMARY_KEYS_SETTING = 'hdhive_api_keys';
 const FALLBACK_KEY_SETTING = 'hdhive_fallback_api_key';
 const MODE_SETTING = 'hdhive_api_mode';
 const ACTIVE_KEY_SETTING = 'hdhive_active_api_key';
+const NOTES_SETTING = 'hdhive_api_key_notes';
 const ENV_KEY = 'DEFAULT_API_KEY';
 const ENV_PATH = path.resolve(process.cwd(), '.env');
 
@@ -76,6 +77,17 @@ function readRuntimeActiveKey(): string | null {
   return raw ? normalizeApiKey(raw) : null;
 }
 
+function readNotes(): Record<string, string> {
+  const raw = botUserRepository.getSetting(NOTES_SETTING);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export const apiKeyConfigService = {
   getRotationState(): ApiKeyRotationState {
     const primaryKeys = readRuntimePrimaryKeys();
@@ -118,8 +130,11 @@ export const apiKeyConfigService = {
 
   getMaskedStatus() {
     const { primaryKeys, fallbackKey, mode, activeKey } = this.getRotationState();
+    const notes = readNotes();
     return {
       primaryKeys: primaryKeys.map(maskApiKey),
+      primaryKeyNotes: primaryKeys.map(key => notes[key] ?? ''),
+      primaryKeyLevels: primaryKeys.map(() => '未知'),
       fallbackKey: maskApiKey(fallbackKey),
       primaryCount: primaryKeys.length,
       persistedDefault: maskApiKey(this.getApiKey()),
@@ -159,5 +174,19 @@ export const apiKeyConfigService = {
     botUserRepository.setSetting(ACTIVE_KEY_SETTING, key);
     writeEnvDefaultApiKey(key);
     return key;
+  },
+
+  setApiKeyNoteByIndex(index: number, note: string): string | null {
+    const keys = this.getPrimaryApiKeys();
+    const key = keys[index] ?? null;
+    if (!key) return null;
+    const notes = readNotes();
+    notes[key] = note.trim();
+    botUserRepository.setSetting(NOTES_SETTING, JSON.stringify(notes));
+    return key;
+  },
+
+  getApiKeyNotes(): Record<string, string> {
+    return readNotes();
   },
 };
