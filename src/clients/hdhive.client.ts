@@ -143,13 +143,32 @@ class HDHiveClient {
     });
   }
 
-  private shouldRotate(error: unknown): boolean {
+  private shouldRotateForGeneralRequest(error: unknown): boolean {
     if (!axios.isAxiosError(error)) return false;
     const status = error.response?.status ?? null;
     return status === 401 || status === 403 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
   }
 
-  private async requestWithApiKeyRotation<T>(config: AxiosRequestConfig): Promise<T> {
+  private shouldRotateForUnlockRequest(error: unknown): boolean {
+    if (!axios.isAxiosError(error)) return false;
+
+    const status = error.response?.status ?? null;
+    const code = error.response?.data?.code as string | undefined;
+
+    // 解锁请求是有副作用操作：
+    // 仅在明确与 key/配额相关的情况下切换 key，避免 5xx/超时导致的重复副作用重试。
+    if (status === 401 || status === 403 || status === 429) {
+      return true;
+    }
+
+    if (code === 'INVALID_API_KEY' || code === 'DISABLED_API_KEY' || code === 'EXPIRED_API_KEY' || code === 'ENDPOINT_QUOTA_EXCEEDED' || code === 'RATE_LIMIT_EXCEEDED') {
+      return true;
+    }
+
+    return false;
+  }
+
+  private async requestWithApiKeyRotation<T>(config: AxiosRequestConfig, mode: 'general' | 'unlock' = 'general'): Promise<T> {
     const { primaryKeys, fallbackKey } = apiKeyConfigService.getRotationState();
     const candidates = [...primaryKeys, ...(fallbackKey ? [fallbackKey] : [])];
     let lastError: unknown;
@@ -166,7 +185,11 @@ class HDHiveClient {
         return res.data;
       } catch (error) {
         lastError = error;
-        if (!this.shouldRotate(error)) {
+        const shouldRotate = mode === 'unlock'
+          ? this.shouldRotateForUnlockRequest(error)
+          : this.shouldRotateForGeneralRequest(error);
+
+        if (!shouldRotate) {
           throw error;
         }
       }
@@ -204,7 +227,7 @@ class HDHiveClient {
       method: 'POST',
       url: '/api/open/resources/unlock',
       data: { slug },
-    });
+    }, 'unlock');
   }
 
   async getShareDetail(slug: string): Promise<HDHiveShareDetailResponse> {
