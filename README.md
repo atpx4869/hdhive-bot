@@ -456,6 +456,7 @@ docker compose up -d --build
 - 阿里云盘默认折叠，可手动展开查看
 - 转存 Bot 支持 `.env` 默认值 + 管理员运行时设置
 - API Key 支持 `auto/manual` 两种模式，并可在 TG 面板切换 Active Key
+- API Key 状态页支持按钮化切换模式与 Active Key
 - 不做资源强行去重
 
 ### 暂不做

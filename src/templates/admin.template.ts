@@ -98,11 +98,22 @@ export const adminTemplate = {
   },
 
   buildApiKeyStatusMessage(status: ApiKeyStatusView) {
-    const keyboard = new InlineKeyboard().text('刷新 API Key', cb.adminApiKey());
+    const keyboard = new InlineKeyboard()
+      .text('刷新 API Key', cb.adminApiKey()).row()
+      .text('切换自动', cb.adminApiMode('auto'))
+      .text('切换手动', cb.adminApiMode('manual')).row();
+
     const primaryLines = status.primaryKeys.map((key, index) => {
       const note = status.primaryKeyNotes[index] ? `｜备注：${status.primaryKeyNotes[index]}` : '';
       const level = status.primaryKeyLevels[index] ? `｜等级：${status.primaryKeyLevels[index]}` : '';
       return `${index + 1}. ${key}${note}${level}`;
+    });
+
+    status.primaryKeys.forEach((_, index) => {
+      keyboard.text(`使用 ${index + 1}`, cb.adminApiActive(index + 1));
+      if ((index + 1) % 3 === 0 || index === status.primaryKeys.length - 1) {
+        keyboard.row();
+      }
     });
 
     return {

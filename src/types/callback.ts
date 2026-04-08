@@ -14,4 +14,6 @@ export type ParsedCallback =
   | { type: 'admin_me' }
   | { type: 'admin_quota' }
   | { type: 'admin_users' }
-  | { type: 'admin_api_key' };
+  | { type: 'admin_api_key' }
+  | { type: 'admin_api_mode'; mode: 'auto' | 'manual' }
+  | { type: 'admin_api_active'; index: number };

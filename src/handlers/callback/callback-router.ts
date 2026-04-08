@@ -342,4 +342,24 @@ export async function callbackRouter(ctx: Context) {
     await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
     return;
   }
+
+  if (parsed.type === 'admin_api_mode') {
+    apiKeyConfigService.setMode(parsed.mode);
+    const status = await apiKeyInspectionService.buildStatusWithLevels();
+    const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
+    await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    return;
+  }
+
+  if (parsed.type === 'admin_api_active') {
+    const selected = apiKeyConfigService.setActiveKeyByIndex(parsed.index - 1);
+    if (!selected) {
+      await ctx.answerCallbackQuery({ text: '无效序号', show_alert: true });
+      return;
+    }
+    const status = await apiKeyInspectionService.buildStatusWithLevels();
+    const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
+    await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    return;
+  }
 }

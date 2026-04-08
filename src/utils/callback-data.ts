@@ -27,6 +27,8 @@ export const cb = {
   adminQuota: () => 'admin:quota',
   adminUsers: () => 'admin:users',
   adminApiKey: () => 'admin:apikey',
+  adminApiMode: (mode: 'auto' | 'manual') => `admin:apimode${SEP}${mode}`,
+  adminApiActive: (index: number) => `admin:apiactive${SEP}${index}`,
 };
 
 export function parseCallbackData(data: string): ParsedCallback | null {
@@ -39,6 +41,15 @@ export function parseCallbackData(data: string): ParsedCallback | null {
   if (data === 'admin:apikey') return { type: 'admin_api_key' };
 
   const parts = data.split(SEP);
+
+  if (data.startsWith('admin:apimode') && parts.length === 3) {
+    const mode = parts[2] === 'manual' ? 'manual' : 'auto';
+    return { type: 'admin_api_mode', mode };
+  }
+  if (data.startsWith('admin:apiactive') && parts.length === 3) {
+    return { type: 'admin_api_active', index: Number(parts[2]) };
+  }
+
   const ns = parts[0];
 
   if (data.startsWith('nav:candidates') && parts.length === 3) {
