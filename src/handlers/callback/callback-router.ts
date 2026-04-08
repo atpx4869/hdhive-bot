@@ -28,9 +28,6 @@ export async function callbackRouter(ctx: Context) {
   const telegramUserId = getTelegramUserId(ctx);
   if (!telegramUserId) return;
 
-  // 先 ack，避免 Telegram 超时
-  await ctx.answerCallbackQuery();
-
   const identity = authService.resolveIdentity(telegramUserId);
   const parsed = parseCallbackData(data);
 
@@ -40,6 +37,12 @@ export async function callbackRouter(ctx: Context) {
   }
 
   logger.info('CallbackRouter', `user=${telegramUserId} type=${parsed.type}`);
+
+  const wantsCustomAck = parsed.type === 'admin_api_mode' || parsed.type === 'admin_api_active';
+  if (!wantsCustomAck) {
+    // 先 ack，避免 Telegram 超时
+    await ctx.answerCallbackQuery();
+  }
 
   // ── 帮助 ────────────────────────────────────────────
   if (parsed.type === 'help_example') {
@@ -348,6 +351,7 @@ export async function callbackRouter(ctx: Context) {
     const status = await apiKeyInspectionService.buildStatusWithLevels();
     const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
     await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    await ctx.answerCallbackQuery({ text: `已切换为${parsed.mode === 'auto' ? '自动轮转' : '手动切换'}` });
     return;
   }
 
@@ -360,6 +364,7 @@ export async function callbackRouter(ctx: Context) {
     const status = await apiKeyInspectionService.buildStatusWithLevels();
     const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
     await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    await ctx.answerCallbackQuery({ text: `已切换到第 ${parsed.index} 个 Active Key` });
     return;
   }
 }

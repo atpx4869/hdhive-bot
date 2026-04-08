@@ -104,9 +104,10 @@ export const adminTemplate = {
       .text('切换手动', cb.adminApiMode('manual')).row();
 
     const primaryLines = status.primaryKeys.map((key, index) => {
+      const isActive = key === status.activeKey;
       const note = status.primaryKeyNotes[index] ? `｜备注：${status.primaryKeyNotes[index]}` : '';
       const level = status.primaryKeyLevels[index] ? `｜等级：${status.primaryKeyLevels[index]}` : '';
-      return `${index + 1}. ${key}${note}${level}`;
+      return `${isActive ? '👉 ' : ''}${index + 1}. ${key}${note}${level}`;
     });
 
     status.primaryKeys.forEach((_, index) => {
