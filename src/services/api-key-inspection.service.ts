@@ -9,8 +9,14 @@ export const apiKeyInspectionService = {
         const me = await hdhiveClient.getMeByApiKey(key);
         return me.data.is_vip ? '高级账号' : '普通账号';
       } catch (err) {
-        if (axios.isAxiosError(err) && (err.response?.status === 403 || err.response?.status === 401)) {
-          return '普通账号';
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status ?? null;
+          const code = err.response?.data?.code as string | undefined;
+
+          // 只有明确命中 VIP_REQUIRED，才保守认为是普通账号。
+          if (status === 403 && code === 'VIP_REQUIRED') {
+            return '普通账号';
+          }
         }
         return '未知';
       }
