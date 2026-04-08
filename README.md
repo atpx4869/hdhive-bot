@@ -72,6 +72,8 @@
 | `/user_list` | 查看白名单 |
 | `/set_forward_bot @example_bot` | 设置转存 Bot 用户名 |
 | `/show_forward_bot` | 查看当前转存 Bot |
+| `/set_api_mode auto|manual` | 切换 API Key 策略模式 |
+| `/set_active_api_key 1` | 手动切换当前 Active Key |
 
 ---
 
@@ -453,6 +455,7 @@ docker compose up -d --build
 - 115 主列表优先展示
 - 阿里云盘默认折叠，可手动展开查看
 - 转存 Bot 支持 `.env` 默认值 + 管理员运行时设置
+- API Key 支持 `auto/manual` 两种模式，并可在 TG 面板切换 Active Key
 - 不做资源强行去重
 
 ### 暂不做

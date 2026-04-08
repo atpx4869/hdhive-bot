@@ -169,8 +169,10 @@ class HDHiveClient {
   }
 
   private async requestWithApiKeyRotation<T>(config: AxiosRequestConfig, mode: 'general' | 'unlock' = 'general'): Promise<T> {
-    const { primaryKeys, fallbackKey } = apiKeyConfigService.getRotationState();
-    const candidates = [...primaryKeys, ...(fallbackKey ? [fallbackKey] : [])];
+    const { primaryKeys, fallbackKey, mode: apiMode, activeKey } = apiKeyConfigService.getRotationState();
+    const candidates = apiMode === 'manual'
+      ? [activeKey ?? primaryKeys[0]].filter(Boolean) as string[]
+      : [...primaryKeys, ...(fallbackKey ? [fallbackKey] : [])];
     let lastError: unknown;
 
     for (const apiKey of candidates) {

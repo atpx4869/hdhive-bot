@@ -5,6 +5,8 @@ import { botUserRepository } from '../repositories/bot-user.repository.js';
 
 const PRIMARY_KEYS_SETTING = 'hdhive_api_keys';
 const FALLBACK_KEY_SETTING = 'hdhive_fallback_api_key';
+const MODE_SETTING = 'hdhive_api_mode';
+const ACTIVE_KEY_SETTING = 'hdhive_active_api_key';
 const ENV_KEY = 'DEFAULT_API_KEY';
 const ENV_PATH = path.resolve(process.cwd(), '.env');
 
@@ -60,21 +62,41 @@ function writeEnvDefaultApiKey(value: string): void {
 export type ApiKeyRotationState = {
   primaryKeys: string[];
   fallbackKey: string | null;
+  mode: 'auto' | 'manual';
+  activeKey: string | null;
 };
+
+function readRuntimeMode(): 'auto' | 'manual' {
+  const raw = botUserRepository.getSetting(MODE_SETTING);
+  return raw === 'manual' ? 'manual' : 'auto';
+}
+
+function readRuntimeActiveKey(): string | null {
+  const raw = botUserRepository.getSetting(ACTIVE_KEY_SETTING);
+  return raw ? normalizeApiKey(raw) : null;
+}
 
 export const apiKeyConfigService = {
   getRotationState(): ApiKeyRotationState {
     const primaryKeys = readRuntimePrimaryKeys();
+    const fallbackKey = readRuntimeFallbackKey();
+    const mode = readRuntimeMode();
+    const activeKey = readRuntimeActiveKey();
+
     if (primaryKeys.length > 0) {
       return {
         primaryKeys,
-        fallbackKey: readRuntimeFallbackKey(),
+        fallbackKey,
+        mode,
+        activeKey,
       };
     }
 
     return {
       primaryKeys: [env.DEFAULT_API_KEY],
-      fallbackKey: readRuntimeFallbackKey(),
+      fallbackKey,
+      mode,
+      activeKey,
     };
   },
 
@@ -87,16 +109,22 @@ export const apiKeyConfigService = {
   },
 
   getApiKey(): string {
-    return this.getPrimaryApiKeys()[0] ?? env.DEFAULT_API_KEY;
+    const state = this.getRotationState();
+    if (state.mode === 'manual') {
+      return state.activeKey ?? state.primaryKeys[0] ?? env.DEFAULT_API_KEY;
+    }
+    return state.primaryKeys[0] ?? env.DEFAULT_API_KEY;
   },
 
   getMaskedStatus() {
-    const { primaryKeys, fallbackKey } = this.getRotationState();
+    const { primaryKeys, fallbackKey, mode, activeKey } = this.getRotationState();
     return {
       primaryKeys: primaryKeys.map(maskApiKey),
       fallbackKey: maskApiKey(fallbackKey),
       primaryCount: primaryKeys.length,
       persistedDefault: maskApiKey(this.getApiKey()),
+      mode,
+      activeKey: maskApiKey(activeKey ?? primaryKeys[0] ?? env.DEFAULT_API_KEY),
     };
   },
 
@@ -105,6 +133,10 @@ export const apiKeyConfigService = {
     if (!keys.length) return [];
     botUserRepository.setSetting(PRIMARY_KEYS_SETTING, keys.join('\n'));
     writeEnvDefaultApiKey(keys[0]!);
+    const currentActive = readRuntimeActiveKey();
+    if (!currentActive || !keys.includes(currentActive)) {
+      botUserRepository.setSetting(ACTIVE_KEY_SETTING, keys[0]!);
+    }
     return keys;
   },
 
@@ -113,5 +145,19 @@ export const apiKeyConfigService = {
     if (!normalized) return null;
     botUserRepository.setSetting(FALLBACK_KEY_SETTING, normalized);
     return normalized;
+  },
+
+  setMode(mode: 'auto' | 'manual'): 'auto' | 'manual' {
+    botUserRepository.setSetting(MODE_SETTING, mode);
+    return mode;
+  },
+
+  setActiveKeyByIndex(index: number): string | null {
+    const keys = this.getPrimaryApiKeys();
+    const key = keys[index] ?? null;
+    if (!key) return null;
+    botUserRepository.setSetting(ACTIVE_KEY_SETTING, key);
+    writeEnvDefaultApiKey(key);
+    return key;
   },
 };

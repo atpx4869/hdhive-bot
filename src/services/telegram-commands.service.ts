@@ -25,6 +25,8 @@ const adminCommands: TelegramCommand[] = [
   { command: 'set_api_key', description: '设置HDHive主API Key' },
   { command: 'show_api_key', description: '查看API Key状态' },
   { command: 'set_fallback_api_key', description: '设置兜底API Key' },
+  { command: 'set_api_mode', description: '设置API Key策略模式' },
+  { command: 'set_active_api_key', description: '切换当前Active Key' },
 ];
 
 export const telegramCommandsService = {

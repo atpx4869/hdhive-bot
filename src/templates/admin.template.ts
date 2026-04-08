@@ -8,6 +8,8 @@ type ApiKeyStatusView = {
   fallbackKey: string;
   primaryCount: number;
   persistedDefault: string;
+  mode: 'auto' | 'manual';
+  activeKey: string;
 };
 
 export const adminTemplate = {
@@ -101,15 +103,19 @@ export const adminTemplate = {
       text: [
         '🔐 <b>HDHive API Key 状态</b>',
         '',
+        `模式：${status.mode === 'auto' ? '自动轮转' : '手动切换'}`,
         `主 Key 数量：${status.primaryCount}`,
         ...primaryLines,
         '',
+        `当前 Active Key：${status.activeKey}`,
         `兜底 Key：${status.fallbackKey}`,
         `默认 .env：${status.persistedDefault}`,
         '',
         '设置命令：',
         '/set_api_key key_a,key_b,key_c',
         '/set_fallback_api_key fallback_key',
+        '/set_api_mode auto|manual',
+        '/set_active_api_key 1',
       ].join('\n'),
       keyboard,
     };
