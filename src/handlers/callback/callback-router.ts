@@ -244,7 +244,9 @@ export async function callbackRouter(ctx: Context) {
     await safeEditMessageText(ctx, '正在解锁，请稍候...');
     const result = await unlockService.unlock(slug);
     logger.info('CallbackRouter', `user=${telegramUserId} unlock slug=${slug} status=${result.status}`);
-    const forwardBotUsername = forwardBotConfigService.getForwardBotUsername();
+    const forwardBotUsername = authService.isAdmin(telegramUserId)
+      ? forwardBotConfigService.getForwardBotUsername()
+      : null;
     const { text, keyboard } = unlockTemplate.buildUnlockResultMessage(result, sessionId, page, forwardBotUsername);
     await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
     return;
@@ -252,7 +254,7 @@ export async function callbackRouter(ctx: Context) {
 
   if (parsed.type === 'forward_bot_open') {
     const forwardBotUsername = forwardBotConfigService.getForwardBotUsername();
-    if (!identity) {
+    if (!authService.isAdmin(telegramUserId)) {
       await ctx.answerCallbackQuery({ text: '你是什么档次？', show_alert: true });
       return;
     }
