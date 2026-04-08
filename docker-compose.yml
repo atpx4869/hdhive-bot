@@ -1,0 +1,13 @@
+services:
+  hdhive-bot:
+    build: .
+    container_name: hdhive-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # 持久化 SQLite 数据库
+      - ./data:/app/data
+    # 如果你后续要加 webhook，把这行打开
+    # ports:
+    #   - "3000:3000"

@@ -1,0 +1,32 @@
+{
+  "name": "hdhive-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.ts",
+  "scripts": {
+    "dev": "tsx watch src/app.ts",
+    "start": "tsx src/app.ts",
+    "build": "tsc",
+    "start:prod": "node dist/app.js",
+    "deploy": "bash scripts/deploy.sh",
+    "update": "bash scripts/update.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.14.0",
+    "better-sqlite3": "^12.8.0",
+    "dotenv": "^17.4.0",
+    "grammy": "^1.42.0",
+    "https-proxy-agent": "^9.0.0",
+    "undici": "^8.0.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.5.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

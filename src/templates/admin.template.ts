@@ -1,0 +1,117 @@
+import { InlineKeyboard } from 'grammy';
+import { cb } from '../utils/callback-data.js';
+import type { AccountSnapshot, QuotaSnapshot } from '../types/account.js';
+import type { BotUser } from '../types/bot.js';
+
+type ApiKeyStatusView = {
+  primaryKeys: string[];
+  fallbackKey: string;
+  primaryCount: number;
+  persistedDefault: string;
+};
+
+export const adminTemplate = {
+  buildMeMessage(snapshot: AccountSnapshot) {
+    const keyboard = new InlineKeyboard().text('刷新账号', cb.adminMe());
+
+    const lines = [
+      '👤 <b>账号状态</b>',
+      '',
+      `昵称：${snapshot.nickname}`,
+      snapshot.username ? `用户名：${snapshot.username}` : '',
+      `VIP：${snapshot.vipText}`,
+      `积分：${snapshot.points}`,
+      `激活：${snapshot.isActivate ? '已激活' : '未激活'}`,
+      `Telegram：${snapshot.telegramBound ? '已绑定' : '未绑定'}`,
+      `最后活跃：${snapshot.lastActiveAt}`,
+    ].filter(Boolean);
+
+    return { text: lines.join('\n'), keyboard };
+  },
+
+  buildQuotaMessage(snapshot: QuotaSnapshot) {
+    const keyboard = new InlineKeyboard()
+      .text('刷新额度', cb.adminQuota()).text('查看账号', cb.adminMe());
+
+    const hasEndpointQuota = snapshot.endpointRemaining !== null || snapshot.endpointLimit !== null;
+    const remaining = snapshot.endpointRemaining === null ? '未知' : String(snapshot.endpointRemaining);
+    const limit = snapshot.endpointLimit === null ? '未知' : String(snapshot.endpointLimit);
+    const weeklyRemaining = snapshot.weeklyUnlimited ? '不限' : String(snapshot.weeklyRemaining);
+
+    const lines = [
+      '📊 <b>额度信息</b>',
+      '',
+      'API额度：',
+      hasEndpointQuota ? `今日剩余：${remaining} / ${limit}` : '当前接口未返回额度上限/剩余字段',
+      '',
+      '今日调用：',
+      `总计：${snapshot.todayTotalCalls}  成功：${snapshot.todaySuccessCalls}  失败：${snapshot.todayFailedCalls}`,
+      `平均延迟：${snapshot.avgLatency.toFixed(0)}ms`,
+      '',
+      '永V免费额度：',
+      `本周已用：${snapshot.weeklyUsed}`,
+      `本周剩余：${weeklyRemaining}`,
+      `累积额度：${snapshot.bonusQuota} / ${snapshot.bonusQuotaMax}`,
+    ];
+
+    return { text: lines.join('\n'), keyboard };
+  },
+
+  buildUserAddResult(telegramUserId: string) {
+    return {
+      text: `✅ 已添加白名单用户\n\nTelegram ID：${telegramUserId}`,
+    };
+  },
+
+  buildUserAlreadyExists() {
+    return { text: '该用户已在白名单中。' };
+  },
+
+  buildUserDelResult(telegramUserId: string) {
+    return {
+      text: `✅ 已移除白名单用户\n\nTelegram ID：${telegramUserId}`,
+    };
+  },
+
+  buildUserNotFound() {
+    return { text: '未找到该白名单用户。' };
+  },
+
+  buildUserListMessage(users: BotUser[]) {
+    const keyboard = new InlineKeyboard().text('刷新列表', cb.adminUsers());
+
+    if (!users.length) {
+      return { text: '当前白名单为空。', keyboard };
+    }
+
+    const lines = ['👥 <b>白名单用户列表</b>', ''];
+    users.forEach((u, i) => {
+      const name = u.username ? `@${u.username}` : u.firstName ?? '-';
+      lines.push(`${i + 1}. ${u.telegramUserId} | ${name}`);
+    });
+
+    return { text: lines.join('\n'), keyboard };
+  },
+
+  buildApiKeyStatusMessage(status: ApiKeyStatusView) {
+    const keyboard = new InlineKeyboard().text('刷新 API Key', cb.adminApiKey());
+    const primaryLines = status.primaryKeys.map((key, index) => `${index + 1}. ${key}`);
+
+    return {
+      text: [
+        '🔐 <b>HDHive API Key 状态</b>',
+        '',
+        `主 Key 数量：${status.primaryCount}`,
+        ...primaryLines,
+        '',
+        `兜底 Key：${status.fallbackKey}`,
+        `默认 .env：${status.persistedDefault}`,
+        '',
+        '设置命令：',
+        '/set_api_key key_a,key_b,key_c',
+        '/set_fallback_api_key fallback_key',
+      ].join('\n'),
+      keyboard,
+    };
+  },
+};
