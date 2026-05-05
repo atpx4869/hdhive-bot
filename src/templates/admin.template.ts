@@ -18,21 +18,18 @@ type ApiKeyStatusView = {
 
 export const adminTemplate = {
   buildMeMessage(snapshot: AccountSnapshot) {
-    const keyboard = new InlineKeyboard().text('刷新账号', cb.adminMe());
+    const keyboard = new InlineKeyboard().text('查看账号详情', cb.adminMe());
 
     const lines = [
-      '👤 <b>账号状态</b>',
+      '👤 <b>账号概览</b>',
       '',
       `昵称：${snapshot.nickname}`,
-      snapshot.username ? `用户名：${snapshot.username}` : '',
-      snapshot.email ? `邮箱：${snapshot.email}` : '',
       `VIP：${snapshot.vipText}`,
       `积分：${snapshot.points}`,
-      `签到：${snapshot.signinDaysTotal} 天`,
-      `分享：${snapshot.shareNum} 个`,
       `激活：${snapshot.isActivate ? '已激活' : '未激活'}`,
-      `Telegram：${snapshot.telegramBound ? '已绑定' : '未绑定'}`,
       `最后活跃：${snapshot.lastActiveAt}`,
+      '',
+      '更多详情请使用 /account',
     ].filter(Boolean);
 
     return { text: lines.join('\n'), keyboard };

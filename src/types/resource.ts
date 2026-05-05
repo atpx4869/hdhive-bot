@@ -16,6 +16,7 @@ export type ResourceCard = {
   /** validate_status === 'invalid' → 疑似失效/不可用 */
   isInvalid: boolean;
   panType: string | null;
+  panQueried: boolean;
 };
 
 export type TmdbCandidate = {

@@ -32,6 +32,7 @@ function toResourceCard(r: Awaited<ReturnType<typeof hdhiveClient.getResourcesBy
     remark: r.remark ?? null,
     isInvalid: r.validate_status === 'invalid',
     panType: r.pan_type ?? null,
+    panQueried: !!r.pan_type,
   };
 }
 
@@ -77,9 +78,10 @@ export const searchService = {
         return {
           ...item,
           panType: detail.data.pan_type,
+          panQueried: true,
         } satisfies ResourceCard;
       } catch {
-        return item;
+        return { ...item, panQueried: true };
       }
     }));
     return enriched;
@@ -125,7 +127,7 @@ export const searchService = {
 
     // 已补查项：以 panType !== null 作为近似标识；无法知道未知网盘与未补查的绝对差异，
     // 这里通过从头连续扫描的方式保守推进。
-    while (enrichedUntil < currentItems.length && currentItems[enrichedUntil]?.panType !== null) {
+    while (enrichedUntil < currentItems.length && currentItems[enrichedUntil]?.panQueried === true) {
       enrichedUntil += 1;
     }
 

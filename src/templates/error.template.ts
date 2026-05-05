@@ -24,7 +24,7 @@ export const errorTemplate = {
     return '网盘类型识别较慢，已先返回当前可识别结果。可稍后翻页重试。';
   },
   noResource() {
-    return '已找到影视条目，但当前暂无可用资源。';
+    return '已找到影视条目，但当前暂无可用资源。\n\n你可以：\n1. 返回选择其他候选条目\n2. 稍后再试';
   },
   invalidCandidateSelection() {
     return '当前候选条目不存在，请重新选择。';

@@ -84,6 +84,8 @@
 | `/set_active_api_key 1` | 手动切换当前 Active Key |
 | `/set_api_mode auto|manual` | 切换 API Key 策略模式 |
 
+> `/set_api_key key_a,key_b` 仍保留兼容，但日常更推荐 `add_api_key / del_api_key / replace_api_key` 单 key 管理方式。
+
 ---
 
 ## 4. Telegram 命令菜单
@@ -213,6 +215,8 @@ npm run dev
 | `DATABASE_PATH` | SQLite 文件路径，默认 `./data/bot.db` |
 | `OUTBOUND_PROXY_URL` | 可选代理地址。本地需要代理时填写，VPS 通常留空 |
 | `FORWARD_BOT_USERNAME` | 可选，默认转存 Bot 用户名，例如 `@example_bot` |
+| `NODE_ENV` | 运行环境，建议本地 `development`，VPS `production` |
+| `PREFLIGHT_LEVEL` | 启动预检级别，`full`（默认）或 `minimal`。VPS 生产环境建议 `minimal` |
 
 > 获取自己的 Telegram User ID：可私聊 `@userinfobot`
 
@@ -223,11 +227,14 @@ npm run dev
 程序启动时会自动检查：
 
 1. Telegram Bot API
-2. TMDB API
-3. HDHive
-4. grammY 自身 `getMe`
+2. grammY 自身 `getMe`
 
-如果其中任意一项失败，程序会直接退出并打印错误日志，方便排查。
+当 `PREFLIGHT_LEVEL=full` 时，还会额外检查：
+
+3. TMDB API
+4. HDHive
+
+本地开发建议保持 `full`，VPS 生产部署建议设置 `minimal`，以减少启动依赖和等待时间。
 
 ---
 
@@ -292,6 +299,8 @@ BOT_ADMIN_IDS=7944617802
 DATABASE_PATH=./data/bot.db
 OUTBOUND_PROXY_URL=
 FORWARD_BOT_USERNAME=@example_bot
+NODE_ENV=production
+PREFLIGHT_LEVEL=minimal
 ```
 
 ### 10.6 先直接运行一次

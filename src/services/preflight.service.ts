@@ -31,18 +31,21 @@ async function probe(
 
 export const preflightService = {
   async run(): Promise<void> {
-    logger.info('Preflight', `Starting checks. proxy=${getProxyUrl() ?? 'disabled'}`);
+    logger.info('Preflight', `Starting checks. proxy=${getProxyUrl() ?? 'disabled'} level=${env.PREFLIGHT_LEVEL}`);
 
     await probe('Telegram', `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getMe`);
-    await probe('TMDB', 'https://api.themoviedb.org/3/configuration', 8000, {
-      api_key: env.TMDB_API_KEY,
-    });
-    await probe('HDHive', 'https://hdhive.com');
+
+    if (env.PREFLIGHT_LEVEL === 'full') {
+      await probe('TMDB', 'https://api.themoviedb.org/3/configuration', 8000, {
+        api_key: env.TMDB_API_KEY,
+      });
+      await probe('HDHive', 'https://hdhive.com');
+    }
 
     const bot = createBot();
     const me = await bot.api.getMe();
     logger.info('Preflight', `grammY getMe ok username=@${me.username} id=${me.id}`);
 
-    logger.info('Preflight', 'All connectivity checks passed');
+    logger.info('Preflight', 'Connectivity checks passed');
   },
 };
