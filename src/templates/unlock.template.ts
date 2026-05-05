@@ -107,7 +107,7 @@ export const unlockTemplate = {
       text: [
         '已通过权限校验。',
         '',
-        `点击下面按钮继续打开转存Bot：${forwardBotUsername}`,
+        '点击下面按钮打开转存Bot。',
       ].join('\n'),
       keyboard: buildForwardBotKeyboard(sessionId, page, forwardBotUsername),
     };
