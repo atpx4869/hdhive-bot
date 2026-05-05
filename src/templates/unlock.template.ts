@@ -9,16 +9,10 @@ function buildBackKeyboard(sessionId: string, page: number) {
 function buildResultKeyboard(sessionId: string, page: number, forwardBotUsername?: string | null) {
   const keyboard = new InlineKeyboard();
   if (forwardBotUsername) {
-    keyboard.text('打开转存Bot', cb.forwardBotOpen(sessionId, page)).row();
+    keyboard.url('打开转存Bot', `https://t.me/${forwardBotUsername.replace(/^@/, '')}`).row();
   }
   keyboard.text('返回列表', cb.navBack(sessionId, page));
   return keyboard;
-}
-
-function buildForwardBotKeyboard(sessionId: string, page: number, forwardBotUsername: string) {
-  return new InlineKeyboard()
-    .url('继续打开转存Bot', `https://t.me/${forwardBotUsername.replace(/^@/, '')}`).row()
-    .text('返回列表', cb.navBack(sessionId, page));
 }
 
 function escapeHtml(value: string): string {
@@ -100,16 +94,5 @@ export const unlockTemplate = {
 
   buildPrivateChatOnlyMessage() {
     return { text: '请私聊机器人解锁资源。' };
-  },
-
-  buildForwardBotJumpMessage(sessionId: string, page: number, forwardBotUsername: string) {
-    return {
-      text: [
-        '已通过权限校验。',
-        '',
-        '点击下面按钮打开转存Bot。',
-      ].join('\n'),
-      keyboard: buildForwardBotKeyboard(sessionId, page, forwardBotUsername),
-    };
   },
 };

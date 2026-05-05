@@ -252,22 +252,6 @@ export async function callbackRouter(ctx: Context) {
     return;
   }
 
-  if (parsed.type === 'forward_bot_open') {
-    const forwardBotUsername = forwardBotConfigService.getForwardBotUsername();
-    if (!authService.isAdmin(telegramUserId)) {
-      await ctx.answerCallbackQuery({ text: '你是什么档次？', show_alert: true });
-      return;
-    }
-    if (!forwardBotUsername) {
-      await ctx.answerCallbackQuery({ text: '当前未配置转存Bot', show_alert: true });
-      return;
-    }
-
-    const { text, keyboard } = unlockTemplate.buildForwardBotJumpMessage(parsed.sessionId, parsed.page, forwardBotUsername);
-    await safeEditMessageText(ctx, text, { reply_markup: keyboard });
-    return;
-  }
-
   // ── 返回列表 ─────────────────────────────────────────
   if (parsed.type === 'nav_back') {
     const { sessionId, page } = parsed;
