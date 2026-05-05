@@ -64,6 +64,7 @@ export type HDHiveWeeklyFreeQuotaResponse = {
 export type HDHiveResource = {
   slug: string;
   title: string;
+  pan_type: string | null;
   share_size: string;
   video_resolution: string[];
   source: string[];

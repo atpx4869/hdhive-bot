@@ -31,7 +31,7 @@ function toResourceCard(r: Awaited<ReturnType<typeof hdhiveClient.getResourcesBy
     unlockedUsersCount: r.unlocked_users_count ?? null,
     remark: r.remark ?? null,
     isInvalid: r.validate_status === 'invalid',
-    panType: null,
+    panType: r.pan_type ?? null,
   };
 }
 
