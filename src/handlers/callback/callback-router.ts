@@ -46,7 +46,7 @@ export async function callbackRouter(ctx: Context) {
     return;
   }
 
-  const wantsCustomAck = parsed.type === 'admin_api_mode' || parsed.type === 'admin_api_active';
+  const wantsCustomAck = parsed.type === 'admin_api_mode' || parsed.type === 'admin_api_active' || parsed.type === 'admin_api_set_fallback';
   if (!wantsCustomAck) {
     await ctx.answerCallbackQuery();
   }
@@ -59,7 +59,7 @@ export async function callbackRouter(ctx: Context) {
   }
 
   if (!authService.isAdmin(telegramUserId)) {
-    await ctx.reply(errorTemplate.adminOnly());
+    await ctx.answerCallbackQuery({ text: errorTemplate.adminOnly(), show_alert: true });
     return;
   }
 

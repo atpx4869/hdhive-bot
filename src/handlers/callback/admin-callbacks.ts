@@ -107,10 +107,15 @@ export async function handleAdminCallbacks(
       await ctx.answerCallbackQuery({ text: '无效序号', show_alert: true });
       return true;
     }
-    const status = await apiKeyInspectionService.buildStatusWithLevels();
-    const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
-    await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
-    await ctx.answerCallbackQuery({ text: `已将第 ${parsed.index} 个主 Key 设为兜底` });
+    try {
+      const status = await apiKeyInspectionService.buildStatusWithLevels();
+      const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
+      await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+      await ctx.answerCallbackQuery({ text: `已将第 ${parsed.index} 个主 Key 设为兜底` });
+    } catch (err) {
+      logger.error('AdminCallbacks', 'admin_api_set_fallback refresh error', err);
+      await ctx.answerCallbackQuery({ text: '已更新兜底 Key，但刷新面板失败，请稍后重试', show_alert: true });
+    }
     return true;
   }
 
