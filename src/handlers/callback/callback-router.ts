@@ -296,7 +296,7 @@ export async function callbackRouter(ctx: Context) {
 
   if (parsed.type === 'admin_me') {
     try {
-      const snapshot = await accountService.getAccountSnapshot();
+      const snapshot = await accountService.getAccountProfile();
       const { text, keyboard } = adminTemplate.buildMeMessage(snapshot);
       await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
     } catch (err) {

@@ -10,6 +10,8 @@ export type AccountSnapshot = {
   isActivate: boolean;
   telegramBound: boolean;
   lastActiveAt: string;
+  activeKeyIndex?: number;
+  activeKeyMasked?: string;
 };
 
 export type QuotaSnapshot = {

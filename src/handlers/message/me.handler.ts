@@ -18,7 +18,7 @@ export async function meHandler(ctx: Context) {
 
   logger.info('MeHandler', `user=${telegramUserId}`);
   try {
-    const snapshot = await accountService.getAccountSnapshot();
+    const snapshot = await accountService.getAccountProfile();
     const { text, keyboard } = adminTemplate.buildMeMessage(snapshot);
     await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
   } catch (err) {

@@ -2,8 +2,10 @@ import { hdhiveClient } from '../clients/hdhive.client.js';
 import type { AccountSnapshot } from '../types/account.js';
 import { formatVipText, formatDate } from '../utils/format.js';
 
+export type AccountProfile = Omit<AccountSnapshot, 'activeKeyIndex' | 'activeKeyMasked'>;
+
 export const accountService = {
-  async getAccountSnapshot(): Promise<AccountSnapshot> {
+  async getAccountProfile(): Promise<AccountProfile> {
     const res = await hdhiveClient.getMe();
     const d = res.data;
     return {

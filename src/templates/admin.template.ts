@@ -54,6 +54,8 @@ export const adminTemplate = {
       `激活：${snapshot.isActivate ? '已激活' : '未激活'}`,
       `Telegram：${snapshot.telegramBound ? '已绑定' : '未绑定'}`,
       `最后活跃：${snapshot.lastActiveAt}`,
+      '',
+      `当前来源：第 ${(snapshot.activeKeyIndex ?? 0) + 1} 把 API Key（${snapshot.activeKeyMasked ?? '未配置'}）`,
     ].filter(Boolean);
 
     return { text: lines.join('\n'), keyboard };
