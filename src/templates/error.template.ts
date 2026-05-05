@@ -9,7 +9,7 @@ export const errorTemplate = {
     return '请私聊机器人解锁资源。';
   },
   noKeyword() {
-    return '请输入要搜索的关键词。\n\n示例：\nFight Club\n\n也支持：\n/search Fight Club';
+    return '请输入要搜索的关键词。\n\n示例：\nFight Club\n仙逆';
   },
   noCandidate() {
     return '未找到相关影视条目，请换个关键词试试。\n\n你也可以：\n1. 简化关键词\n2. 试试原名 / 英文名\n3. 发送 /help 查看示例';

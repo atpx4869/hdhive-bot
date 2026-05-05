@@ -2,25 +2,36 @@ import { InlineKeyboard } from 'grammy';
 import { cb } from '../utils/callback-data.js';
 
 export const helpTemplate = {
-  buildHelpMessage(botUsername: string) {
+  buildHelpMessage(botUsername: string, isAdmin = false) {
     const keyboard = new InlineKeyboard()
       .text('搜索示例', cb.helpExample())
       .text('开始搜索', cb.navSearch());
+
+    const lines: string[] = [
+      '📘 使用帮助',
+      '',
+      '1. 私聊或任意聊天中发送关键词',
+      '2. 先选择影视条目（电影 / 剧集）',
+      '3. 查看 115 资源列表',
+      '4. 直接点击序号按钮解锁下载',
+      '',
+      '常用命令：',
+      '/search 关键词',
+      '/help',
+      '',
+      `也可以在任意聊天中输入：@${botUsername} 关键词`,
+    ];
+
+    if (isAdmin) {
+      lines.push('');
+      lines.push('管理员命令：');
+      lines.push('/account  查看账号信息');
+      lines.push('/user_add /user_del /user_list  管理白名单');
+      lines.push('/show_api_key  管理 API Key');
+    }
+
     return {
-      text: [
-        '📘 使用帮助',
-        '',
-        '1. 私聊发送 /search 关键词',
-        '2. 先选择影视条目（电影 / 剧集）',
-        '3. 查看 115 资源列表',
-        '4. 直接点击序号按钮解锁下载',
-        '',
-        '常用命令：',
-        '/search 关键词',
-        '/help',
-        '',
-        `也可以在任意聊天输入：@${botUsername} 关键词`,
-      ].join('\n'),
+      text: lines.join('\n'),
       keyboard,
     };
   },

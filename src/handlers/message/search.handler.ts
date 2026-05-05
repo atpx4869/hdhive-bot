@@ -115,12 +115,12 @@ export async function runSearchByCandidate(ctx: Context, candidate: TmdbCandidat
 
 export async function searchHandler(ctx: Context) {
   const text = ctx.message?.text ?? '';
-  const keyword = text.replace(/^\/search\s*/i, '').trim();
+  const keyword = text.replace(/^\/search\s*/i, '').replace(/\s+/g, ' ').trim();
   await runSearch(ctx, keyword);
 }
 
 export async function keywordMessageHandler(ctx: Context) {
-  const text = (ctx.message?.text ?? '').trim();
+  const text = (ctx.message?.text ?? '').replace(/\s+/g, ' ').trim();
   if (!text) return;
   if (text.startsWith('/')) return;
   await runSearch(ctx, text);

@@ -19,7 +19,7 @@ function escapeHtml(value: string): string {
 
 export const searchTemplate = {
   buildSearchEntryMessage() {
-    return { text: '请直接发送要搜索的关键词。\n\n示例：\nFight Club\n\n也支持：\n/search Fight Club\n\n不确定怎么搜？可发送 /help' };
+    return { text: '请直接发送要搜索的关键词。\n\n示例：\nFight Club\n仙逆\n黑镜\n\n不确定怎么搜？可发送 /help' };
   },
 
   buildCandidatePickerMessage(sessionId: string, candidates: TmdbCandidate[]) {

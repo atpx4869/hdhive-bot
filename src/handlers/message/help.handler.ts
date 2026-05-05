@@ -15,6 +15,7 @@ export async function helpHandler(ctx: Context) {
     return;
   }
 
-  const { text, keyboard } = helpTemplate.buildHelpMessage(env.BOT_USERNAME);
+  const isAdmin = authService.isAdmin(telegramUserId);
+  const { text, keyboard } = helpTemplate.buildHelpMessage(env.BOT_USERNAME, isAdmin);
   await ctx.reply(text, { reply_markup: keyboard });
 }
