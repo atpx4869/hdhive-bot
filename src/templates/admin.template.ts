@@ -101,9 +101,9 @@ export const adminTemplate = {
 
   buildApiKeyStatusMessage(status: ApiKeyStatusView) {
     const keyboard = new InlineKeyboard()
-      .text('🔄R', cb.adminApiKey()).row()
-      .text('🔄A', cb.adminApiMode('auto'))
-      .text('✋M', cb.adminApiMode('manual')).row();
+      .text('刷新', cb.adminApiKey()).row()
+      .text('自动', cb.adminApiMode('auto'))
+      .text('手动', cb.adminApiMode('manual')).row();
 
     const primaryLines = status.primaryKeys.map((key, index) => {
       const isActive = key === status.activeKey;
@@ -114,15 +114,15 @@ export const adminTemplate = {
     });
 
     status.primaryKeys.forEach((_, index) => {
-      keyboard.text(`👉${index + 1}`, cb.adminApiActive(index + 1));
-      keyboard.text(`🛟${index + 1}`, cb.adminApiSetFallback(index + 1));
-      keyboard.text(`🗑${index + 1}`, cb.adminApiDelete(index + 1));
+      keyboard.text(`使用${index + 1}`, cb.adminApiActive(index + 1));
+      keyboard.text(`备用${index + 1}`, cb.adminApiSetFallback(index + 1));
+      keyboard.text(`删除${index + 1}`, cb.adminApiDelete(index + 1));
       if ((index + 1) % 3 === 0 || index === status.primaryKeys.length - 1) {
         keyboard.row();
       }
     });
 
-    keyboard.text('🧹F', cb.adminApiClearFallback()).row();
+    keyboard.text('清备', cb.adminApiClearFallback()).row();
 
     return {
       text: [
