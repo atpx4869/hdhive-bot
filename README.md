@@ -73,7 +73,7 @@
 | `/user_list` | 查看白名单 |
 | `/set_forward_bot @example_bot` | 设置转存 Bot 用户名 |
 | `/show_forward_bot` | 查看当前转存 Bot |
-| `/show_api_key` | 查看 API Key 状态 |
+| `/show_api_key` | 查看 API Key 状态与快速诊断摘要 |
 | `/add_api_key <key>` | 添加一个主 API Key |
 | `/del_api_key <序号>` | 删除一个主 API Key |
 | `/replace_api_key <序号> <新key>` | 替换一个主 API Key |

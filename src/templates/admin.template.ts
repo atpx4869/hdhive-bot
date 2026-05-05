@@ -14,6 +14,7 @@ type ApiKeyStatusView = {
   persistedDefault: string;
   mode: 'auto' | 'manual';
   activeKey: string;
+  lastInspectionAt?: string | null;
 };
 
 export const adminTemplate = {
@@ -155,11 +156,13 @@ export const adminTemplate = {
         '',
         `${status.overallStatus}`,
         `模式：${status.mode === 'auto' ? '自动轮转' : '手动切换'}`,
+        `当前 Active：${status.activeKey}`,
+        `兜底 Key：${status.fallbackKey}`,
+        status.lastInspectionAt ? `最后检测：${status.lastInspectionAt}` : '',
+        '',
         `主 Key 数量：${status.primaryCount}`,
         ...primaryLines,
         '',
-        `当前 Active Key：${status.activeKey}`,
-        `兜底 Key：${status.fallbackKey}`,
         `默认 .env：${status.persistedDefault}`,
         '',
         '常用命令：',
@@ -168,7 +171,7 @@ export const adminTemplate = {
         '/del_api_key 1',
         '/replace_api_key 1 新key',
         '/set_api_key_note 1 备注',
-      ].join('\n'),
+      ].filter(Boolean).join('\n'),
       keyboard,
     };
   },

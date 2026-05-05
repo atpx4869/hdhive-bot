@@ -14,7 +14,12 @@ export type ApiKeyOverallStatus = {
   emoji: '✅' | '⚠️' | '❌';
 };
 
+let lastInspectionAt: string | null = null;
+
 export const apiKeyInspectionService = {
+  getLastInspectionAt(): string | null {
+    return lastInspectionAt;
+  },
   async detectLevels(keys: string[]): Promise<ApiKeyInspectionResult[]> {
     return Promise.all(keys.map(async (key) => {
       try {
@@ -73,11 +78,13 @@ export const apiKeyInspectionService = {
         ? { label: '仅部分 Key 可用', emoji: '⚠️' }
         : { label: '当前不可用', emoji: '❌' };
 
+    lastInspectionAt = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
     return {
       ...status,
       primaryKeyLevels: inspections.map(item => `${item.levelEmoji} ${item.levelLabel}`),
       primaryKeyValidity: inspections.map(item => `${item.validEmoji} ${item.validStatus}`),
       overallStatus: `${overall.emoji} ${overall.label}`,
+      lastInspectionAt,
     };
   },
 };
