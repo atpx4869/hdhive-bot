@@ -5,6 +5,7 @@ import { meHandler } from '../handlers/message/me.handler.js';
 import { quotaHandler } from '../handlers/message/quota.handler.js';
 import { pingHandler } from '../handlers/message/ping.handler.js';
 import { helpHandler } from '../handlers/message/help.handler.js';
+import { accountHandler } from '../handlers/message/account.handler.js';
 import { userAddHandler } from '../handlers/message/user-add.handler.js';
 import { userDelHandler } from '../handlers/message/user-del.handler.js';
 import { userListHandler } from '../handlers/message/user-list.handler.js';
@@ -51,6 +52,7 @@ export function registerHandlers(bot: Bot) {
   bot.command('ping', pingHandler);
   bot.command('me', meHandler);
   bot.command('quota', quotaHandler);
+  bot.command('account', accountHandler);
   bot.command('user_add', userAddHandler);
   bot.command('user_del', userDelHandler);
   bot.command('user_list', userListHandler);

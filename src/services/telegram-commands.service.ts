@@ -17,6 +17,7 @@ const defaultCommands: TelegramCommand[] = [
 const adminCommands: TelegramCommand[] = [
   { command: 'me', description: '查看账号状态' },
   { command: 'quota', description: '查看额度信息' },
+  { command: 'account', description: '查看账号信息' },
   { command: 'user_add', description: '添加白名单用户' },
   { command: 'user_del', description: '删除白名单用户' },
   { command: 'user_list', description: '查看白名单用户' },

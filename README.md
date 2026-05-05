@@ -66,6 +66,7 @@
 | 命令 | 说明 |
 |---|---|
 | `/me` | 查看 HDHive 账号状态 |
+| `/account` | 查看账号信息 |
 | `/quota` | 查看额度信息 |
 | `/user_add <telegram_user_id>` | 添加白名单用户 |
 | `/user_del <telegram_user_id>` | 删除白名单用户 |
@@ -98,6 +99,7 @@
 
 ### 管理员额外看到
 - `/me`
+- `/account`
 - `/quota`
 - `/user_add`
 - `/user_del`

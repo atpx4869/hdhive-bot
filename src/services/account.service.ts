@@ -9,6 +9,7 @@ export const accountService = {
     return {
       nickname: d.nickname,
       username: d.username,
+      email: d.email,
       isVip: d.is_vip,
       vipText: formatVipText(d.is_vip, d.vip_expiration_date),
       points: d.user_meta.points,

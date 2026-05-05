@@ -41,6 +41,7 @@ export const startTemplate = {
         '/search 关键词',
         '/help',
         '/me',
+        '/account',
         '/quota',
         '/show_api_key',
         '/set_api_key <key1,key2,...>',

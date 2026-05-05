@@ -1,6 +1,7 @@
 export type AccountSnapshot = {
   nickname: string;
   username?: string;
+  email?: string;
   isVip: boolean;
   vipText: string;
   points: number;
