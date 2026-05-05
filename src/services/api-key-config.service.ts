@@ -157,6 +157,27 @@ export const apiKeyConfigService = {
     return keys;
   },
 
+  addPrimaryKey(input: string): { addedKey: string; totalCount: number } | null {
+    const normalized = normalizeApiKey(input);
+    if (!normalized) return null;
+
+    const keys = [...this.getPrimaryApiKeys()];
+    if (keys.includes(normalized)) return null;
+
+    keys.push(normalized);
+    botUserRepository.setSetting(PRIMARY_KEYS_SETTING, keys.join('\n'));
+
+    if (keys.length === 1) {
+      botUserRepository.setSetting(ACTIVE_KEY_SETTING, keys[0]!);
+      writeEnvDefaultApiKey(keys[0]!);
+    } else {
+      const firstKey = keys[0]!;
+      writeEnvDefaultApiKey(firstKey);
+    }
+
+    return { addedKey: normalized, totalCount: keys.length };
+  },
+
   setFallbackApiKey(input: string): string | null {
     const normalized = normalizeApiKey(input);
     if (!normalized) return null;
@@ -186,7 +207,7 @@ export const apiKeyConfigService = {
     return key;
   },
 
-  deletePrimaryKeyByIndex(index: number): string | null {
+  deletePrimaryKeyByIndex(index: number): { deletedKey: string; remainingCount: number } | null {
     const keys = [...this.getPrimaryApiKeys()];
     const key = keys[index] ?? null;
     if (!key) return null;
@@ -205,6 +226,46 @@ export const apiKeyConfigService = {
     delete notes[key];
     botUserRepository.setSetting(NOTES_SETTING, JSON.stringify(notes));
 
+    return { deletedKey: key, remainingCount: keys.length };
+  },
+
+  replacePrimaryKeyByIndex(index: number, input: string): string | null {
+    const keys = [...this.getPrimaryApiKeys()];
+    const oldKey = keys[index] ?? null;
+    const newKey = normalizeApiKey(input);
+    if (!oldKey || !newKey) return null;
+    if (oldKey === newKey) return newKey;
+
+    keys[index] = newKey;
+    const unique = uniqueKeys(keys);
+    botUserRepository.setSetting(PRIMARY_KEYS_SETTING, unique.join('\n'));
+
+    const notes = readNotes();
+    const oldNote = notes[oldKey];
+    delete notes[oldKey];
+    if (oldNote !== undefined) {
+      notes[newKey] = oldNote;
+    }
+    botUserRepository.setSetting(NOTES_SETTING, JSON.stringify(notes));
+
+    const currentActive = readRuntimeActiveKey();
+    if (currentActive === oldKey || !currentActive) {
+      botUserRepository.setSetting(ACTIVE_KEY_SETTING, unique[0] ?? newKey);
+      writeEnvDefaultApiKey(unique[0] ?? newKey);
+    } else {
+      writeEnvDefaultApiKey(unique[0] ?? newKey);
+    }
+
+    return newKey;
+  },
+
+  deleteApiKeyNoteByIndex(index: number): string | null {
+    const keys = this.getPrimaryApiKeys();
+    const key = keys[index] ?? null;
+    if (!key) return null;
+    const notes = readNotes();
+    delete notes[key];
+    botUserRepository.setSetting(NOTES_SETTING, JSON.stringify(notes));
     return key;
   },
 

@@ -22,12 +22,16 @@ const adminCommands: TelegramCommand[] = [
   { command: 'user_list', description: '查看白名单用户' },
   { command: 'set_forward_bot', description: '设置转存Bot用户名' },
   { command: 'show_forward_bot', description: '查看当前转存Bot' },
-  { command: 'set_api_key', description: '设置HDHive主API Key' },
   { command: 'show_api_key', description: '查看API Key状态' },
+  { command: 'add_api_key', description: '添加一个主API Key' },
+  { command: 'del_api_key', description: '删除一个主API Key' },
+  { command: 'replace_api_key', description: '替换一个主API Key' },
+  { command: 'set_api_key_note', description: '设置API Key备注' },
+  { command: 'del_api_key_note', description: '删除API Key备注' },
   { command: 'set_fallback_api_key', description: '设置兜底API Key' },
+  { command: 'del_fallback_api_key', description: '清空兜底API Key' },
   { command: 'set_api_mode', description: '设置API Key策略模式' },
   { command: 'set_active_api_key', description: '切换当前Active Key' },
-  { command: 'set_api_key_note', description: '设置API Key备注' },
 ];
 
 export const telegramCommandsService = {

@@ -138,8 +138,11 @@ export const adminTemplate = {
         `默认 .env：${status.persistedDefault}`,
         '',
         '常用命令：',
-        '/set_api_key key_a,key_b,key_c',
-        '/set_api_key_note 1 生产VIP',
+        '/show_api_key',
+        '/add_api_key 新key',
+        '/del_api_key 1',
+        '/replace_api_key 1 新key',
+        '/set_api_key_note 1 备注',
       ].join('\n'),
       keyboard,
     };

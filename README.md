@@ -72,8 +72,16 @@
 | `/user_list` | 查看白名单 |
 | `/set_forward_bot @example_bot` | 设置转存 Bot 用户名 |
 | `/show_forward_bot` | 查看当前转存 Bot |
-| `/set_api_mode auto|manual` | 切换 API Key 策略模式 |
+| `/show_api_key` | 查看 API Key 状态 |
+| `/add_api_key <key>` | 添加一个主 API Key |
+| `/del_api_key <序号>` | 删除一个主 API Key |
+| `/replace_api_key <序号> <新key>` | 替换一个主 API Key |
+| `/set_api_key_note <序号> <备注>` | 设置 API Key 备注 |
+| `/del_api_key_note <序号>` | 删除 API Key 备注 |
+| `/set_fallback_api_key <key>` | 设置兜底 API Key |
+| `/del_fallback_api_key` | 清空兜底 API Key |
 | `/set_active_api_key 1` | 手动切换当前 Active Key |
+| `/set_api_mode auto|manual` | 切换 API Key 策略模式 |
 
 ---
 
