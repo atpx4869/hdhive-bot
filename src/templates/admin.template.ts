@@ -2,8 +2,10 @@ import { InlineKeyboard } from 'grammy';
 import { cb } from '../utils/callback-data.js';
 import type { AccountSnapshot, QuotaSnapshot } from '../types/account.js';
 import type { BotUser } from '../types/bot.js';
+import { esc, italic } from '../utils/html.js';
+import { Icon, Divider, brandFooter } from './icons.js';
 
-type ApiKeyStatusView = {
+export type ApiKeyStatusView = {
   primaryKeys: string[];
   primaryKeyNotes: string[];
   primaryKeyLevels: string[];
@@ -19,49 +21,54 @@ type ApiKeyStatusView = {
 
 export const adminTemplate = {
   buildMeMessage(snapshot: AccountSnapshot) {
-    const keyboard = new InlineKeyboard().text('查看账号详情', cb.adminMe());
+    const keyboard = new InlineKeyboard()
+      .text(`${Icon.refresh} 刷新`, cb.adminMe())
+      .text(`${Icon.quota} 额度`, cb.adminQuota());
 
     const lines = [
-      '👤 <b>账号概览</b>',
+      `${Icon.account} <b>账号概览</b>`,
+      Divider,
+      `昵称　${esc(snapshot.nickname)}`,
+      `VIP 　${esc(snapshot.vipText)}`,
+      `积分　<b>${snapshot.points}</b>`,
+      `激活　${snapshot.isActivate ? `${Icon.ok} 已激活` : `${Icon.warn} 未激活`}`,
+      `最后活跃　${esc(snapshot.lastActiveAt)}`,
       '',
-      `昵称：${snapshot.nickname}`,
-      `VIP：${snapshot.vipText}`,
-      `积分：${snapshot.points}`,
-      `激活：${snapshot.isActivate ? '已激活' : '未激活'}`,
-      `最后活跃：${snapshot.lastActiveAt}`,
-      '',
-      '更多详情请使用 /account',
-    ].filter(Boolean);
+      italic('更多详情请使用 /account'),
+    ];
 
-    return { text: lines.join('\n'), keyboard };
+    return { text: lines.join('\n') + brandFooter(), keyboard };
   },
 
   buildAccountMessage(snapshot: AccountSnapshot) {
-    const keyboard = new InlineKeyboard().text('刷新账号', cb.adminMe());
+    const keyboard = new InlineKeyboard()
+      .text(`${Icon.refresh} 刷新`, cb.adminMe())
+      .text(`${Icon.quota} 额度`, cb.adminQuota());
 
     const lines = [
-      '👤 <b>账号信息</b>',
-      '',
-      `昵称：${snapshot.nickname}`,
-      snapshot.username ? `用户名：${snapshot.username}` : '',
-      snapshot.email ? `邮箱：${snapshot.email}` : '',
-      `VIP：${snapshot.vipText}`,
-      `积分：${snapshot.points}`,
-      `签到：${snapshot.signinDaysTotal} 天`,
-      `分享：${snapshot.shareNum} 个`,
-      `激活：${snapshot.isActivate ? '已激活' : '未激活'}`,
-      `Telegram：${snapshot.telegramBound ? '已绑定' : '未绑定'}`,
-      `最后活跃：${snapshot.lastActiveAt}`,
-      '',
-      `当前来源：第 ${(snapshot.activeKeyIndex ?? 0) + 1} 把 API Key（${snapshot.activeKeyMasked ?? '未配置'}）`,
+      `${Icon.account} <b>账号信息</b>`,
+      Divider,
+      `昵称　${esc(snapshot.nickname)}`,
+      snapshot.username ? `用户名　${esc(snapshot.username)}` : '',
+      snapshot.email ? `邮箱　${esc(snapshot.email)}` : '',
+      `VIP 　${esc(snapshot.vipText)}`,
+      `积分　<b>${snapshot.points}</b>`,
+      `签到　${snapshot.signinDaysTotal} 天`,
+      `分享　${snapshot.shareNum} 个`,
+      `激活　${snapshot.isActivate ? `${Icon.ok} 已激活` : `${Icon.warn} 未激活`}`,
+      `Telegram　${snapshot.telegramBound ? `${Icon.ok} 已绑定` : `${Icon.warn} 未绑定`}`,
+      `最后活跃　${esc(snapshot.lastActiveAt)}`,
+      Divider,
+      `${Icon.apiKey} 当前来源：第 ${(snapshot.activeKeyIndex ?? 0) + 1} 把 API Key（${esc(snapshot.activeKeyMasked ?? '未配置')}）`,
     ].filter(Boolean);
 
-    return { text: lines.join('\n'), keyboard };
+    return { text: lines.join('\n') + brandFooter(), keyboard };
   },
 
   buildQuotaMessage(snapshot: QuotaSnapshot) {
     const keyboard = new InlineKeyboard()
-      .text('刷新额度', cb.adminQuota()).text('查看账号', cb.adminMe());
+      .text(`${Icon.refresh} 刷新`, cb.adminQuota())
+      .text(`${Icon.account} 账号`, cb.adminMe());
 
     const hasEndpointQuota = snapshot.endpointRemaining !== null || snapshot.endpointLimit !== null;
     const remaining = snapshot.endpointRemaining === null ? '未知' : String(snapshot.endpointRemaining);
@@ -69,109 +76,146 @@ export const adminTemplate = {
     const weeklyRemaining = snapshot.weeklyUnlimited ? '不限' : String(snapshot.weeklyRemaining);
 
     const lines = [
-      '📊 <b>额度信息</b>',
+      `${Icon.quota} <b>额度信息</b>`,
+      Divider,
+      italic('API 接口额度'),
+      hasEndpointQuota
+        ? `今日剩余 <b>${remaining}</b> / ${limit}`
+        : `${Icon.warn} 当前接口未返回额度上限/剩余字段`,
       '',
-      'API额度：',
-      hasEndpointQuota ? `今日剩余：${remaining} / ${limit}` : '当前接口未返回额度上限/剩余字段',
-      '',
-      '今日调用：',
-      `总计：${snapshot.todayTotalCalls}  成功：${snapshot.todaySuccessCalls}  失败：${snapshot.todayFailedCalls}`,
-      `平均延迟：${snapshot.avgLatency.toFixed(0)}ms`,
-      '',
-      '永V免费额度：',
-      `本周已用：${snapshot.weeklyUsed}`,
-      `本周剩余：${weeklyRemaining}`,
-      `累积额度：${snapshot.bonusQuota} / ${snapshot.bonusQuotaMax}`,
+      italic('今日调用'),
+      `总计 ${snapshot.todayTotalCalls} · ${Icon.ok} ${snapshot.todaySuccessCalls} · ${Icon.err} ${snapshot.todayFailedCalls}`,
+      `平均延迟 ${snapshot.avgLatency.toFixed(0)} ms`,
+      Divider,
+      italic('永 V 免费额度'),
+      `本周已用 ${snapshot.weeklyUsed}`,
+      `本周剩余 <b>${weeklyRemaining}</b>`,
+      `累积额度 ${snapshot.bonusQuota} / ${snapshot.bonusQuotaMax}`,
     ];
 
-    return { text: lines.join('\n'), keyboard };
+    return { text: lines.join('\n') + brandFooter(), keyboard };
   },
 
   buildUserAddResult(telegramUserId: string) {
     return {
-      text: `✅ 已添加白名单用户\n\nTelegram ID：${telegramUserId}`,
+      text: `${Icon.ok} <b>已添加白名单用户</b>\n\nTelegram ID：<code>${esc(telegramUserId)}</code>` + brandFooter(),
     };
   },
 
   buildUserAlreadyExists() {
-    return { text: '该用户已在白名单中。' };
+    return { text: `${Icon.warn} 该用户已在白名单中。` };
   },
 
   buildUserDelResult(telegramUserId: string) {
     return {
-      text: `✅ 已移除白名单用户\n\nTelegram ID：${telegramUserId}`,
+      text: `${Icon.ok} <b>已移除白名单用户</b>\n\nTelegram ID：<code>${esc(telegramUserId)}</code>` + brandFooter(),
     };
   },
 
   buildUserNotFound() {
-    return { text: '未找到该白名单用户。' };
+    return { text: `${Icon.warn} 未找到该白名单用户。` };
   },
 
   buildUserListMessage(users: BotUser[]) {
-    const keyboard = new InlineKeyboard().text('刷新列表', cb.adminUsers());
+    const keyboard = new InlineKeyboard().text(`${Icon.refresh} 刷新`, cb.adminUsers());
 
     if (!users.length) {
-      return { text: '当前白名单为空。', keyboard };
+      return { text: `${Icon.users2} 当前白名单为空。`, keyboard };
     }
 
-    const lines = ['👥 <b>白名单用户列表</b>', ''];
+    const lines = [`${Icon.users2} <b>白名单用户列表</b>`, Divider];
     users.forEach((u, i) => {
-      const name = u.username ? `@${u.username}` : u.firstName ?? '-';
-      lines.push(`${i + 1}. ${u.telegramUserId} | ${name}`);
+      const name = u.username ? `@${esc(u.username)}` : esc(u.firstName ?? '-');
+      lines.push(`${i + 1}. <code>${esc(u.telegramUserId)}</code> · ${name}`);
     });
 
-    return { text: lines.join('\n'), keyboard };
+    return { text: lines.join('\n') + brandFooter(), keyboard };
   },
 
+  /**
+   * 第一层：API Key 总览。
+   * 每把 key 一行，点击进入第二层（buildApiKeyItemMessage）做操作。
+   */
   buildApiKeyStatusMessage(status: ApiKeyStatusView) {
     const keyboard = new InlineKeyboard()
-      .text('刷新', cb.adminApiKey()).row()
-      .text('自动', cb.adminApiMode('auto'))
-      .text('手动', cb.adminApiMode('manual')).row();
+      .text(`${Icon.refresh} 刷新`, cb.adminApiKey()).row();
+
+    // 模式切换
+    const autoLabel = status.mode === 'auto' ? `${Icon.ok} 自动故障转移` : '自动故障转移';
+    const manualLabel = status.mode === 'manual' ? `${Icon.ok} 手动切换` : '手动切换';
+    keyboard.text(autoLabel, cb.adminApiMode('auto')).text(manualLabel, cb.adminApiMode('manual')).row();
+
+    // 每把 key 一个独立按钮进入第二层
+    status.primaryKeys.forEach((key, index) => {
+      const isActive = key === status.activeKey;
+      const tag = isActive ? `${Icon.brand} ` : '';
+      keyboard.text(`${tag}${index + 1}. ${key}`, cb.adminApiKeyItem(index + 1)).row();
+    });
+
+    keyboard.text(`${Icon.warn} 清空兜底`, cb.adminApiClearFallback());
 
     const primaryLines = status.primaryKeys.map((key, index) => {
       const isActive = key === status.activeKey;
-      const note = status.primaryKeyNotes[index] ? `｜备注：${status.primaryKeyNotes[index]}` : '';
-      const validity = status.primaryKeyValidity[index] ? `｜${status.primaryKeyValidity[index]}` : '';
-      const level = status.primaryKeyLevels[index] ? `｜等级：${status.primaryKeyLevels[index]}` : '';
-      return `${isActive ? '👉 ' : ''}${index + 1}. ${key}${validity}${level}${note}`;
+      const note = status.primaryKeyNotes[index] ? ` · 备注 ${esc(status.primaryKeyNotes[index]!)}` : '';
+      const validity = status.primaryKeyValidity[index] ? ` · ${esc(status.primaryKeyValidity[index]!)}` : '';
+      const level = status.primaryKeyLevels[index] ? ` · ${esc(status.primaryKeyLevels[index]!)}` : '';
+      return `${isActive ? `${Icon.brand} ` : '　'}${index + 1}. <code>${esc(key)}</code>${validity}${level}${note}`;
     });
-
-    status.primaryKeys.forEach((key, index) => {
-      const isActive = key === status.activeKey;
-      const activeSuffix = isActive ? '（当前）' : '';
-      keyboard.text(`使用${index + 1}${activeSuffix}`, cb.adminApiActive(index + 1));
-      keyboard.text(`备用${index + 1}`, cb.adminApiSetFallback(index + 1));
-      keyboard.text(`删除${index + 1}`, cb.adminApiDelete(index + 1));
-      if ((index + 1) % 3 === 0 || index === status.primaryKeys.length - 1) {
-        keyboard.row();
-      }
-    });
-
-    keyboard.text('清备', cb.adminApiClearFallback()).row();
 
     return {
       text: [
-        '🔐 <b>HDHive API Key 状态</b>',
-        '',
-        `${status.overallStatus}`,
-        `模式：${status.mode === 'auto' ? '自动轮转' : '手动切换'}`,
-        `当前 Active：${status.activeKey}`,
-        `兜底 Key：${status.fallbackKey}`,
-        status.lastInspectionAt ? `最后检测：${status.lastInspectionAt}` : '',
-        '',
-        `主 Key 数量：${status.primaryCount}`,
+        `${Icon.apiKey} <b>HDHive API Key 状态</b>`,
+        Divider,
+        `${esc(status.overallStatus)}`,
+        `模式　${status.mode === 'auto' ? `${Icon.refresh} 自动故障转移（首 Key 优先，失败自动切下一把/兜底）` : `${Icon.brand} 手动切换`}`,
+        `当前 Active　<code>${esc(status.activeKey)}</code>`,
+        `兜底 Key　<code>${esc(status.fallbackKey)}</code>`,
+        status.lastInspectionAt ? `最后检测　${esc(status.lastInspectionAt)}` : '',
+        Divider,
+        `主 Key 数量　${status.primaryCount}`,
         ...primaryLines,
+        Divider,
+        `默认 .env　<code>${esc(status.persistedDefault)}</code>`,
         '',
-        `默认 .env：${status.persistedDefault}`,
+        italic('点击下方按钮选中某把 Key 后可切换为 Active / 兜底 / 删除。'),
+      ].filter(Boolean).join('\n') + brandFooter(),
+      keyboard,
+    };
+  },
+
+  /**
+   * 第二层：单把 Key 的操作面板。
+   */
+  buildApiKeyItemMessage(status: ApiKeyStatusView, index: number) {
+    const key = status.primaryKeys[index];
+    if (!key) {
+      return {
+        text: `${Icon.warn} 该 Key 序号不存在，请返回总览。` + brandFooter(),
+        keyboard: new InlineKeyboard().text(`${Icon.back} 返回总览`, cb.adminApiKey()),
+      };
+    }
+    const isActive = key === status.activeKey;
+    const note = status.primaryKeyNotes[index] ?? '';
+    const validity = status.primaryKeyValidity[index] ?? '';
+    const level = status.primaryKeyLevels[index] ?? '';
+
+    const keyboard = new InlineKeyboard()
+      .text(isActive ? `${Icon.ok} 当前 Active` : `${Icon.brand} 切为 Active`, cb.adminApiActive(index + 1))
+      .text(`${Icon.warn} 设为兜底`, cb.adminApiSetFallback(index + 1)).row()
+      .text(`${Icon.err} 删除该 Key`, cb.adminApiDelete(index + 1)).row()
+      .text(`${Icon.back} 返回总览`, cb.adminApiKey());
+
+    return {
+      text: [
+        `${Icon.apiKey} <b>第 ${index + 1} 把 API Key</b>`,
+        Divider,
+        `值　<code>${esc(key)}</code>`,
+        validity ? `状态　${esc(validity)}` : '',
+        level ? `等级　${esc(level)}` : '',
+        note ? `备注　${esc(note)}` : `备注　${italic('未设置')}`,
         '',
-        '常用命令：',
-        '/show_api_key',
-        '/add_api_key 新key',
-        '/del_api_key 1',
-        '/replace_api_key 1 新key',
-        '/set_api_key_note 1 备注',
-      ].filter(Boolean).join('\n'),
+        italic('删除后无法恢复；若它是 Active，删除后会自动切到下一把。'),
+      ].filter(Boolean).join('\n') + brandFooter(),
       keyboard,
     };
   },

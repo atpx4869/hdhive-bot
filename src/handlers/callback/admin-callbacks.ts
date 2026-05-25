@@ -5,7 +5,9 @@ import { botUserService } from '../../services/bot-user.service.js';
 import { apiKeyInspectionService } from '../../services/api-key-inspection.service.js';
 import { apiKeyConfigService } from '../../services/api-key-config.service.js';
 import { adminTemplate } from '../../templates/admin.template.js';
+import { startTemplate } from '../../templates/start.template.js';
 import { errorTemplate } from '../../templates/error.template.js';
+import { buildAdminHeroSummary } from '../message/start.handler.js';
 import { logger } from '../../utils/logger.js';
 import { safeEditMessageText } from '../../utils/telegram-safe.js';
 import type { ParsedCallback } from '../../types/callback.js';
@@ -16,11 +18,13 @@ type AdminParsed = Extract<ParsedCallback, {
     | 'admin_quota'
     | 'admin_users'
     | 'admin_api_key'
+    | 'admin_api_key_item'
     | 'admin_api_mode'
     | 'admin_api_active'
     | 'admin_api_delete'
     | 'admin_api_set_fallback'
-    | 'admin_api_clear_fallback';
+    | 'admin_api_clear_fallback'
+    | 'admin_dashboard';
 }>;
 
 export async function handleAdminCallbacks(
@@ -66,12 +70,32 @@ export async function handleAdminCallbacks(
     return true;
   }
 
+  if (parsed.type === 'admin_api_key_item') {
+    const status = await apiKeyInspectionService.buildStatusWithLevels();
+    const { text, keyboard } = adminTemplate.buildApiKeyItemMessage(status, parsed.index - 1);
+    await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+    return true;
+  }
+
+  if (parsed.type === 'admin_dashboard') {
+    try {
+      const hero = await buildAdminHeroSummary();
+      const { text, keyboard } = startTemplate.buildAdminMessage(hero);
+      await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
+      await ctx.answerCallbackQuery({ text: '已刷新摘要' });
+    } catch (err) {
+      logger.error('AdminCallbacks', 'admin_dashboard error', err);
+      await ctx.answerCallbackQuery({ text: '刷新失败，请稍后重试', show_alert: true });
+    }
+    return true;
+  }
+
   if (parsed.type === 'admin_api_mode') {
     apiKeyConfigService.setMode(parsed.mode);
     const status = await apiKeyInspectionService.buildStatusWithLevels();
     const { text, keyboard } = adminTemplate.buildApiKeyStatusMessage(status);
     await safeEditMessageText(ctx, text, { parse_mode: 'HTML', reply_markup: keyboard });
-    await ctx.answerCallbackQuery({ text: `已切换为${parsed.mode === 'auto' ? '自动轮转' : '手动切换'}` });
+    await ctx.answerCallbackQuery({ text: `已切换为${parsed.mode === 'auto' ? '自动故障转移' : '手动切换'}` });
     return true;
   }
 

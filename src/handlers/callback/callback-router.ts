@@ -46,7 +46,13 @@ export async function callbackRouter(ctx: Context) {
     return;
   }
 
-  const wantsCustomAck = parsed.type === 'admin_api_mode' || parsed.type === 'admin_api_active' || parsed.type === 'admin_api_set_fallback';
+  const wantsCustomAck =
+    parsed.type === 'admin_api_mode' ||
+    parsed.type === 'admin_api_active' ||
+    parsed.type === 'admin_api_set_fallback' ||
+    parsed.type === 'admin_api_delete' ||
+    parsed.type === 'admin_api_clear_fallback' ||
+    parsed.type === 'admin_dashboard';
   if (!wantsCustomAck) {
     await ctx.answerCallbackQuery();
   }

@@ -26,6 +26,7 @@ export type TmdbCandidate = {
   originalTitle?: string | undefined;
   year?: string | undefined;
   overview?: string | undefined;
+  posterPath?: string | undefined;
 };
 
 export type CandidateSession = {

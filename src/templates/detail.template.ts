@@ -1,14 +1,8 @@
 import { InlineKeyboard } from 'grammy';
 import { cb } from '../utils/callback-data.js';
 import type { ResourceCard } from '../types/resource.js';
-
-function formatPanType(panType: string | null): string {
-  if (!panType) return '未知网盘';
-  const v = panType.toLowerCase();
-  if (v === '115') return '💾 115网盘';
-  if (v.includes('ali')) return '☁️ 阿里云盘';
-  return panType;
-}
+import { esc, italic, spoiler } from '../utils/html.js';
+import { Icon, Divider, brandFooter, formatPanLabelDetail } from './icons.js';
 
 export const detailTemplate = {
   buildResourceDetailMessage(
@@ -17,35 +11,46 @@ export const detailTemplate = {
     page: number,
     isPrivate: boolean,
   ) {
-    const lines = [
-      `🎬 <b>${card.title}</b>`,
-      '',
-      `📦 大小：${card.shareSize}`,
-      `💽 网盘：${formatPanType(card.panType)}`,
-      `🎞 分辨率：${card.resolutionText}`,
-      `📡 片源：${card.sourceText}`,
-      `🈸 字幕：${card.subtitleText}`,
-      `💰 解锁：${card.unlockText}`,
-      `🔍 验证：${card.validationText}`,
-      `🏷 来源：${card.originText}`,
+    const isFree = card.unlockPoints === null || card.unlockPoints === 0;
+    const priceText = isFree ? `${Icon.free} 免费` : `${Icon.unlock} ${card.unlockPoints} 积分`;
+
+    const lines: string[] = [
+      // 标题块
+      `${Icon.movie} <b>${esc(card.title)}</b>`,
+      `${formatPanLabelDetail(card.panType)} · ${italic(esc(card.originText))}`,
     ];
 
-    if (card.unlockedUsersCount !== null) {
-      lines.push(`👥 已解锁：${card.unlockedUsersCount}`);
-    }
     if (card.lastValidatedAt) {
-      lines.push(`🕒 最后验证：${card.lastValidatedAt}`);
+      lines.push(`${Icon.time} 最后验证 ${esc(card.lastValidatedAt)}`);
     }
+
+    // 规格块
+    lines.push(Divider);
+    lines.push(`${Icon.size} 大小　${esc(card.shareSize)}`);
+    lines.push(`${Icon.resolution} 分辨率　${esc(card.resolutionText)}`);
+    lines.push(`${Icon.source} 片源　${esc(card.sourceText)}`);
+    lines.push(`${Icon.subtitle} 字幕　${esc(card.subtitleText)}`);
+
+    // 经济块
+    lines.push(Divider);
+    lines.push(`${priceText}`);
+    lines.push(`${Icon.validation} 验证　${esc(card.validationText)}`);
+    if (card.unlockedUsersCount !== null) {
+      lines.push(`${Icon.users} 已解锁　${card.unlockedUsersCount}`);
+    }
+
     if (card.remark) {
-      lines.push(`📝 备注：${card.remark}`);
+      lines.push(Divider);
+      lines.push(`${Icon.remark} 备注`);
+      lines.push(spoiler(card.remark));
     }
 
     const keyboard = new InlineKeyboard();
     if (isPrivate) {
-      keyboard.text('立即解锁', cb.unlock(card.slug, sessionId, page)).row();
+      keyboard.text(`${Icon.brand} 立即解锁`, cb.unlock(card.slug, sessionId, page)).row();
     }
-    keyboard.text('返回列表', cb.navBack(sessionId, page));
+    keyboard.text(`${Icon.back} 返回列表`, cb.navBack(sessionId, page));
 
-    return { text: lines.join('\n'), keyboard };
+    return { text: lines.join('\n') + brandFooter(), keyboard };
   },
 };

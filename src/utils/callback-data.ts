@@ -26,7 +26,9 @@ export const cb = {
   adminMe: () => 'admin:me',
   adminQuota: () => 'admin:quota',
   adminUsers: () => 'admin:users',
+  adminDashboard: () => 'admin:dash',
   adminApiKey: () => 'admin:apikey',
+  adminApiKeyItem: (index: number) => `admin:apikeyitem${SEP}${index}`,
   adminApiMode: (mode: 'auto' | 'manual') => `admin:apimode${SEP}${mode}`,
   adminApiActive: (index: number) => `admin:apiactive${SEP}${index}`,
   adminApiDelete: (index: number) => `admin:apidelete${SEP}${index}`,
@@ -41,11 +43,15 @@ export function parseCallbackData(data: string): ParsedCallback | null {
   if (data === 'admin:me') return { type: 'admin_me' };
   if (data === 'admin:quota') return { type: 'admin_quota' };
   if (data === 'admin:users') return { type: 'admin_users' };
+  if (data === 'admin:dash') return { type: 'admin_dashboard' };
   if (data === 'admin:apikey') return { type: 'admin_api_key' };
   if (data === 'admin:apiclearfallback') return { type: 'admin_api_clear_fallback' };
 
   const parts = data.split(SEP);
 
+  if (data.startsWith('admin:apikeyitem') && parts.length === 3) {
+    return { type: 'admin_api_key_item', index: Number(parts[2]) };
+  }
   if (data.startsWith('admin:apimode') && parts.length === 3) {
     const mode = parts[2] === 'manual' ? 'manual' : 'auto';
     return { type: 'admin_api_mode', mode };

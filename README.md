@@ -498,6 +498,32 @@ docker compose up -d --build
 
 ---
 
-## 17. License
+## 17. UI 优化日志（2026-05 全量改版）
+
+本轮迭代统一了消息样式，目标是「更美观、更漂亮、更高端」：
+
+### 共享基础设施
+- 新增 `src/utils/html.ts`：`esc / code / bold / italic / spoiler / quote / truncate` 等 HTML 渲染工具，所有用户输入统一转义，杜绝 parse 错误。
+- 新增 `src/templates/icons.ts`：集中维护品牌图标 `Icon`、分隔符 `Divider`、品牌脚注 `brandFooter()`、网盘标签 `formatPanLabel*`、分页可视化条 `paginationBar()`。
+
+### 模板改版
+- `start.template.ts`：管理员首屏新增 Hero 摘要（昵称/VIP/积分/今日剩余额度/本周免费剩余/Active Key 掩码），并新增「刷新摘要」按钮。
+- `help.template.ts` / `error.template.ts`：统一图标、分隔线和品牌脚注；错误消息多行指引化。
+- `search.template.ts`：候选列表 emoji + 序号化；资源列表两行制（标题 + 规格·网盘·价签），分页改为 `●●○○ 1/4`；序号按钮文案带 `1·🆓 / 2·¥30` 价签。
+- `detail.template.ts`：详情卡片三段化（标题 / 规格 / 经济 / 备注 spoiler）。
+- `unlock.template.ts`：解锁结果按状态分色（已拥有 ✅ / 免费 🆓 / 解锁成功 💎 / 积分不足 🪫 / 失败 ❌），链接独立 `<code>` 行便于复制；按钮文案改为「🚀 发往转存 Bot」。
+- `admin.template.ts`：API Key 面板两层化——第一层总览（每把 Key 单独按钮 + 模式切换 + 清空兜底），第二层进入单 Key 操作面板（切为 Active / 设为兜底 / 删除 / 返回）。
+
+### 行为对齐
+- `auto` 模式文案改为「自动故障转移（首 Key 优先，失败自动切下一把/兜底）」，与 `hdhive.client.ts` 的 `requestWithApiKeyRotation` 实际行为一致。
+- `api-key-config.service.ts` 中 `getMaskedStatus()` 的占位字段从 "未知 / ⚠️ 待确认 / ⚠️ 仅部分 Key 可用" 改为中性 "— / 未检测 / 未检测"，避免在 inspection 服务覆盖之前误导用户。
+- 新增回调：`admin:dash`（刷新管理员首屏摘要）、`admin:apikeyitem:<n>`（进入单 Key 操作）；并在 `callback-router.ts` 将它们加入自定义 ack 名单。
+
+### 类型扩展
+- `TmdbCandidate` 增加 `posterPath?` 字段，预留候选海报展示能力（`tmdb.client.ts` 已回填 `poster_path`）。
+
+---
+
+## 18. License
 
 当前项目未单独声明 License，如需开源请补充。

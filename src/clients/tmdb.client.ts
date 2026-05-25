@@ -15,6 +15,7 @@ type TmdbMultiSearchResult = {
     first_air_date?: string;
     popularity?: number;
     overview?: string;
+    poster_path?: string | null;
   }>;
 };
 
@@ -57,6 +58,7 @@ class TmdbClient {
           originalTitle,
           year,
           overview: r.overview?.trim() || undefined,
+          posterPath: r.poster_path ?? undefined,
         };
       });
   }
