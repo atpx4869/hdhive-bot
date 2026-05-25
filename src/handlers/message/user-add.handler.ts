@@ -29,9 +29,9 @@ export async function userAddHandler(ctx: Context) {
 
   if (!result.success) {
     logger.warn('UserAddHandler', `target=${targetId} already_exists`);
-    await ctx.reply(adminTemplate.buildUserAlreadyExists().text);
+    await ctx.reply(adminTemplate.buildUserAlreadyExists().text, { parse_mode: 'HTML' });
     return;
   }
 
-  await ctx.reply(adminTemplate.buildUserAddResult(targetId).text);
+  await ctx.reply(adminTemplate.buildUserAddResult(targetId).text, { parse_mode: 'HTML' });
 }

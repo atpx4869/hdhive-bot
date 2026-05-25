@@ -63,7 +63,7 @@ export async function startHandler(ctx: Context) {
 
   if (!identity) {
     const { text } = startTemplate.buildGuestMessage();
-    await ctx.reply(text);
+    await ctx.reply(text, { parse_mode: 'HTML' });
     return;
   }
 
@@ -75,5 +75,5 @@ export async function startHandler(ctx: Context) {
   }
 
   const { text, keyboard } = startTemplate.buildUserMessage(env.BOT_USERNAME);
-  await ctx.reply(text, { reply_markup: keyboard });
+  await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
 }

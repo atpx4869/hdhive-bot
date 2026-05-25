@@ -29,9 +29,9 @@ export async function userDelHandler(ctx: Context) {
 
   if (!result.success) {
     logger.warn('UserDelHandler', `target=${targetId} not_found`);
-    await ctx.reply(adminTemplate.buildUserNotFound().text);
+    await ctx.reply(adminTemplate.buildUserNotFound().text, { parse_mode: 'HTML' });
     return;
   }
 
-  await ctx.reply(adminTemplate.buildUserDelResult(targetId).text);
+  await ctx.reply(adminTemplate.buildUserDelResult(targetId).text, { parse_mode: 'HTML' });
 }
