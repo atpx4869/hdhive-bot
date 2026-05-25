@@ -219,4 +219,37 @@ export const adminTemplate = {
       keyboard,
     };
   },
+
+  /**
+   * API Key 命令系列的统一回复模板（HTML + 品牌脚注），
+   * 给 /set_api_key、/add_api_key、/del_api_key、/replace_api_key、
+   * /set_active_api_key、/set_api_mode、/set_fallback_api_key、
+   * /del_fallback_api_key、/set_api_key_note、/del_api_key_note 复用。
+   */
+  buildApiKeyReply(opts: {
+    title: string;
+    detailLines?: string[];
+    status: 'ok' | 'warn' | 'err';
+    hint?: string;
+  }) {
+    const icon = opts.status === 'ok' ? Icon.ok : opts.status === 'warn' ? Icon.warn : Icon.err;
+    const lines = [
+      `${icon} <b>${esc(opts.title)}</b>`,
+      ...(opts.detailLines && opts.detailLines.length ? [Divider, ...opts.detailLines] : []),
+      ...(opts.hint ? ['', italic(opts.hint)] : []),
+    ];
+    return { text: lines.join('\n') + brandFooter() };
+  },
+
+  /** API Key 命令系列的参数错误提示 */
+  buildApiKeyBadParam(example: string) {
+    return {
+      text: [
+        `${Icon.warn} <b>参数错误</b>`,
+        Divider,
+        '示例：',
+        `<code>${esc(example)}</code>`,
+      ].join('\n') + brandFooter(),
+    };
+  },
 };
