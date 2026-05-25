@@ -1,6 +1,7 @@
 import type { Context } from 'grammy';
 import { authService } from '../../services/auth.service.js';
 import { errorTemplate } from '../../templates/error.template.js';
+import { adminTemplate } from '../../templates/admin.template.js';
 import { getTelegramUserId } from '../../utils/guards.js';
 import { apiKeyConfigService } from '../../services/api-key-config.service.js';
 
@@ -13,5 +14,9 @@ export async function delFallbackApiKeyHandler(ctx: Context) {
   }
 
   apiKeyConfigService.clearFallbackApiKey();
-  await ctx.reply('✅ 已清空兜底 Key');
+  const r = adminTemplate.buildApiKeyReply({
+    title: '已清空兜底 Key',
+    status: 'ok',
+  });
+  await ctx.reply(r.text, { parse_mode: 'HTML' });
 }

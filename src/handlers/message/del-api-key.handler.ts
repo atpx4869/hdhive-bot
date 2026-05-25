@@ -1,6 +1,7 @@
 import type { Context } from 'grammy';
 import { authService } from '../../services/auth.service.js';
 import { errorTemplate } from '../../templates/error.template.js';
+import { adminTemplate } from '../../templates/admin.template.js';
 import { getTelegramUserId } from '../../utils/guards.js';
 import { apiKeyConfigService } from '../../services/api-key-config.service.js';
 
@@ -17,15 +18,26 @@ export async function delApiKeyHandler(ctx: Context) {
   const index = Number(raw);
 
   if (!Number.isInteger(index) || index < 1) {
-    await ctx.reply('参数错误。\n\n示例：\n/del_api_key 1');
+    const r = adminTemplate.buildApiKeyBadParam('/del_api_key 1');
+    await ctx.reply(r.text, { parse_mode: 'HTML' });
     return;
   }
 
   const result = apiKeyConfigService.deletePrimaryKeyByIndex(index - 1);
   if (!result) {
-    await ctx.reply('删除失败：序号不存在，或至少保留 1 把主 Key。');
+    const r = adminTemplate.buildApiKeyReply({
+      title: '删除失败',
+      status: 'err',
+      detailLines: ['原因：序号不存在，或至少需保留 1 把主 Key。'],
+    });
+    await ctx.reply(r.text, { parse_mode: 'HTML' });
     return;
   }
 
-  await ctx.reply(`✅ 已删除第 ${index} 个主 Key\n当前剩余主 Key 数量：${result.remainingCount}`);
+  const r = adminTemplate.buildApiKeyReply({
+    title: `已删除第 ${index} 把主 Key`,
+    status: 'ok',
+    detailLines: [`剩余主 Key 数量　<b>${result.remainingCount}</b>`],
+  });
+  await ctx.reply(r.text, { parse_mode: 'HTML' });
 }

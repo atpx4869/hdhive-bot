@@ -25,6 +25,9 @@ import { delFallbackApiKeyHandler } from '../handlers/message/del-fallback-api-k
 import { callbackRouter } from '../handlers/callback/callback-router.js';
 import { inlineQueryHandler } from '../handlers/inline/inline-query.handler.js';
 import { logger } from '../utils/logger.js';
+import { authService } from '../services/auth.service.js';
+import { errorTemplate } from '../templates/error.template.js';
+import { botUserService } from '../services/bot-user.service.js';
 
 export function registerHandlers(bot: Bot) {
   // 全局 update 日志中间件（在所有 handler 之前）
@@ -40,6 +43,44 @@ export function registerHandlers(bot: Bot) {
       logger.info('Update', `[callback] user=${userId}(${username}) data="${ctx.callbackQuery.data}"`);
     } else if (ctx.inlineQuery) {
       logger.info('Update', `[inline] user=${userId}(${username}) query="${ctx.inlineQuery.query}"`);
+    }
+
+    await next();
+  });
+
+  // 全局白名单/元信息中间件：
+  // 1. 对非命令的自由文本短路游客（避免触发关键词搜索 → HDHive 客户端浪费 API 调用）
+  // 2. 对已知白名单用户首次出现的 username/firstName/lastName 自动回填到 sqlite
+  bot.use(async (ctx, next) => {
+    const from = ctx.from;
+    const tgId = from?.id?.toString();
+    if (!tgId) {
+      await next();
+      return;
+    }
+
+    const identity = authService.resolveIdentity(tgId);
+    const text = ctx.message?.text;
+    const isFreeText = typeof text === 'string' && text.length > 0 && !text.startsWith('/');
+
+    // 自由文本：未授权直接拦截
+    if (isFreeText && !identity) {
+      logger.warn('AuthMiddleware', `block guest free text user=${tgId}`);
+      await ctx.reply(errorTemplate.noPermission());
+      return;
+    }
+
+    // 已知白名单用户：把最新的 Telegram 资料回填到 sqlite（仅当有变化时）
+    if (identity && identity.role === 'USER' && from) {
+      try {
+        botUserService.touchMetadata(tgId, {
+          username: from.username,
+          firstName: from.first_name,
+          lastName: from.last_name,
+        });
+      } catch (err) {
+        logger.warn('AuthMiddleware', `touchMetadata failed user=${tgId}`, err);
+      }
     }
 
     await next();

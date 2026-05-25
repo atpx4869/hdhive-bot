@@ -28,7 +28,7 @@ export async function handleSearchCallbacks(
   }
 
   if (parsed.type === 'nav_candidates') {
-    const session = sessionService.getCandidateSession(parsed.candidateSessionId);
+    const session = sessionService.getCandidateSession(parsed.candidateSessionId, telegramUserId);
     if (!session) {
       await safeEditMessageText(ctx, errorTemplate.sessionExpired());
       return true;
@@ -40,7 +40,7 @@ export async function handleSearchCallbacks(
 
   if (parsed.type === 'pick') {
     const { sessionId, candidateIndex } = parsed;
-    const session = sessionService.getCandidateSession(sessionId);
+    const session = sessionService.getCandidateSession(sessionId, telegramUserId);
     if (!session) {
       await safeEditMessageText(ctx, errorTemplate.sessionExpired());
       return true;
@@ -90,7 +90,7 @@ export async function handleSearchCallbacks(
 
   if (parsed.type === 'page') {
     const { sessionId, page } = parsed;
-    let session = sessionService.getResultSession(sessionId);
+    let session = sessionService.getResultSession(sessionId, telegramUserId);
     if (!session) {
       await safeEditMessageText(ctx, errorTemplate.sessionExpired());
       return true;
@@ -124,7 +124,7 @@ export async function handleSearchCallbacks(
 
   if (parsed.type === 'toggle_ali') {
     const { sessionId } = parsed;
-    let session = sessionService.getResultSession(sessionId);
+    let session = sessionService.getResultSession(sessionId, telegramUserId);
     if (!session) {
       await safeEditMessageText(ctx, errorTemplate.sessionExpired());
       return true;
@@ -142,7 +142,7 @@ export async function handleSearchCallbacks(
 
   if (parsed.type === 'toggle_115') {
     const { sessionId, page } = parsed;
-    let session = sessionService.getResultSession(sessionId);
+    let session = sessionService.getResultSession(sessionId, telegramUserId);
     if (!session) {
       await safeEditMessageText(ctx, errorTemplate.sessionExpired());
       return true;
@@ -160,7 +160,7 @@ export async function handleSearchCallbacks(
 
   if (parsed.type === 'detail') {
     const { sessionId, slug, page } = parsed;
-    const session = sessionService.getResultSession(sessionId);
+    const session = sessionService.getResultSession(sessionId, telegramUserId);
     if (!session) {
       await safeEditMessageText(ctx, errorTemplate.sessionExpired());
       return true;
@@ -179,7 +179,7 @@ export async function handleSearchCallbacks(
 
   if (parsed.type === 'nav_back') {
     const { sessionId, page } = parsed;
-    let session = sessionService.getResultSession(sessionId);
+    let session = sessionService.getResultSession(sessionId, telegramUserId);
     if (!session) {
       await safeEditMessageText(ctx, errorTemplate.sessionExpired());
       return true;

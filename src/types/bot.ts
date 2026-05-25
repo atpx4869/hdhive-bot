@@ -11,16 +11,15 @@ export type BotUser = {
   username: string | null;
   firstName: string | null;
   lastName: string | null;
-  enabled: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
 export type AddBotUserInput = {
   telegramUserId: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
+  username?: string | undefined;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
 };
 
 export type AddBotUserResult =

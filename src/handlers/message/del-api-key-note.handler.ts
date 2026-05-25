@@ -1,6 +1,7 @@
 import type { Context } from 'grammy';
 import { authService } from '../../services/auth.service.js';
 import { errorTemplate } from '../../templates/error.template.js';
+import { adminTemplate } from '../../templates/admin.template.js';
 import { getTelegramUserId } from '../../utils/guards.js';
 import { apiKeyConfigService } from '../../services/api-key-config.service.js';
 
@@ -17,15 +18,25 @@ export async function delApiKeyNoteHandler(ctx: Context) {
   const index = Number(raw);
 
   if (!Number.isInteger(index) || index < 1) {
-    await ctx.reply('参数错误。\n\n示例：\n/del_api_key_note 1');
+    const r = adminTemplate.buildApiKeyBadParam('/del_api_key_note 1');
+    await ctx.reply(r.text, { parse_mode: 'HTML' });
     return;
   }
 
   const result = apiKeyConfigService.deleteApiKeyNoteByIndex(index - 1);
   if (!result) {
-    await ctx.reply('无效序号，请先使用 /show_api_key 查看主 Key 列表。');
+    const r = adminTemplate.buildApiKeyReply({
+      title: '删除备注失败',
+      status: 'err',
+      detailLines: ['原因：序号不存在。'],
+    });
+    await ctx.reply(r.text, { parse_mode: 'HTML' });
     return;
   }
 
-  await ctx.reply(`✅ 已删除第 ${index} 个 API Key 的备注`);
+  const r = adminTemplate.buildApiKeyReply({
+    title: `已删除第 ${index} 把 Key 的备注`,
+    status: 'ok',
+  });
+  await ctx.reply(r.text, { parse_mode: 'HTML' });
 }

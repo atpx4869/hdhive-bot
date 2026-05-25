@@ -16,6 +16,18 @@ export const botUserService = {
   },
 
   listUsers(): BotUser[] {
-    return botUserRepository.listEnabledUsers();
+    return botUserRepository.listUsers();
+  },
+
+  /**
+   * 已知白名单用户每次说话时调用，把最新 Telegram 资料回填到 sqlite。
+   * 字段无变化时不会写库。
+   */
+  touchMetadata(telegramUserId: string, fields: {
+    username?: string | undefined;
+    firstName?: string | undefined;
+    lastName?: string | undefined;
+  }): boolean {
+    return botUserRepository.updateMetadata(telegramUserId, fields);
   },
 };

@@ -27,11 +27,15 @@ export const sessionService = {
     return id;
   },
 
-  getCandidateSession(sessionId: string): CandidateSession | null {
+  getCandidateSession(sessionId: string, ownerUserId?: string): CandidateSession | null {
     const s = candidateSessions.get(sessionId);
     if (!s || isExpired(s.createdAt)) {
       candidateSessions.delete(sessionId);
       logger.debug('SessionService', `Candidate session expired/missing id=${sessionId}`);
+      return null;
+    }
+    if (ownerUserId && s.telegramUserId !== ownerUserId) {
+      logger.warn('SessionService', `candidate session owner mismatch id=${sessionId} owner=${s.telegramUserId} caller=${ownerUserId}`);
       return null;
     }
     const touched = touch(s);
@@ -46,11 +50,15 @@ export const sessionService = {
     return id;
   },
 
-  getResultSession(sessionId: string): ResultSession | null {
+  getResultSession(sessionId: string, ownerUserId?: string): ResultSession | null {
     const s = resultSessions.get(sessionId);
     if (!s || isExpired(s.createdAt)) {
       resultSessions.delete(sessionId);
       logger.debug('SessionService', `Result session expired/missing id=${sessionId}`);
+      return null;
+    }
+    if (ownerUserId && s.telegramUserId !== ownerUserId) {
+      logger.warn('SessionService', `result session owner mismatch id=${sessionId} owner=${s.telegramUserId} caller=${ownerUserId}`);
       return null;
     }
     const touched = touch(s);

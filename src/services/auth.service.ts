@@ -10,7 +10,7 @@ export const authService = {
       return { telegramUserId, role: 'ADMIN' };
     }
     const user = botUserRepository.findByTelegramUserId(telegramUserId);
-    if (user && user.enabled) {
+    if (user) {
       logger.debug('AuthService', `Resolved whitelist user=${telegramUserId}`);
       return { telegramUserId, role: 'USER' };
     }

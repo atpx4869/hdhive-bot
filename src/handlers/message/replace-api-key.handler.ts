@@ -1,6 +1,7 @@
 import type { Context } from 'grammy';
 import { authService } from '../../services/auth.service.js';
 import { errorTemplate } from '../../templates/error.template.js';
+import { adminTemplate } from '../../templates/admin.template.js';
 import { getTelegramUserId } from '../../utils/guards.js';
 import { apiKeyConfigService } from '../../services/api-key-config.service.js';
 
@@ -19,15 +20,25 @@ export async function replaceApiKeyHandler(ctx: Context) {
   const newKey = parts.join(' ').trim();
 
   if (!Number.isInteger(index) || index < 1 || !newKey) {
-    await ctx.reply('参数错误。\n\n示例：\n/replace_api_key 1 新key内容');
+    const r = adminTemplate.buildApiKeyBadParam('/replace_api_key 1 新key内容');
+    await ctx.reply(r.text, { parse_mode: 'HTML' });
     return;
   }
 
   const result = apiKeyConfigService.replacePrimaryKeyByIndex(index - 1, newKey);
   if (!result) {
-    await ctx.reply('替换失败：序号不存在或新 Key 无效。');
+    const r = adminTemplate.buildApiKeyReply({
+      title: '替换失败',
+      status: 'err',
+      detailLines: ['原因：序号不存在或新 Key 无效。'],
+    });
+    await ctx.reply(r.text, { parse_mode: 'HTML' });
     return;
   }
 
-  await ctx.reply(`✅ 已替换第 ${index} 个主 Key`);
+  const r = adminTemplate.buildApiKeyReply({
+    title: `已替换第 ${index} 把主 Key`,
+    status: 'ok',
+  });
+  await ctx.reply(r.text, { parse_mode: 'HTML' });
 }

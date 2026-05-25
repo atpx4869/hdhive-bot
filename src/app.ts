@@ -4,12 +4,36 @@ import { registerHandlers } from './bot/register-handlers.js';
 import { logger } from './utils/logger.js';
 import { preflightService } from './services/preflight.service.js';
 import { telegramCommandsService } from './services/telegram-commands.service.js';
+import { closeDb } from './repositories/bot-user.repository.js';
 
 async function main() {
   await preflightService.run();
 
   const bot = createBot();
   registerHandlers(bot);
+
+  // 优雅关闭：先停 grammY 长轮询，再关 sqlite，避免在写入中途被强杀。
+  let shuttingDown = false;
+  async function shutdown(signal: string) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.info('App', `Received ${signal}, shutting down gracefully...`);
+    try {
+      await bot.stop();
+      logger.info('App', 'Bot stopped');
+    } catch (err) {
+      logger.warn('App', 'bot.stop failed', err);
+    }
+    try {
+      closeDb();
+      logger.info('App', 'SQLite closed');
+    } catch (err) {
+      logger.warn('App', 'closeDb failed', err);
+    }
+    process.exit(0);
+  }
+  process.on('SIGINT', () => { void shutdown('SIGINT'); });
+  process.on('SIGTERM', () => { void shutdown('SIGTERM'); });
 
   logger.info('App', 'Calling grammY getMe...');
   const me = await bot.api.getMe();

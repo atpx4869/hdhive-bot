@@ -171,12 +171,19 @@ class HDHiveClient {
 
   private async requestWithApiKeyRotation<T>(config: AxiosRequestConfig, mode: 'general' | 'unlock' = 'general'): Promise<T> {
     const { primaryKeys, fallbackKey, mode: apiMode, activeKey } = apiKeyConfigService.getRotationState();
-    const candidates = apiMode === 'manual'
+    const rawCandidates = apiMode === 'manual'
       ? [activeKey ?? primaryKeys[0]].filter(Boolean) as string[]
       : [...primaryKeys, ...(fallbackKey ? [fallbackKey] : [])];
+    // 去重：兜底 Key 同时出现在主列表时不要重复尝试
+    const candidates = [...new Set(rawCandidates)];
     let lastError: unknown;
 
-    for (const apiKey of candidates) {
+    for (let i = 0; i < candidates.length; i++) {
+      const apiKey = candidates[i]!;
+      // 在重试之间加微小退避，避免远端限流被瞬间扫一遍
+      if (i > 0) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 200 * i));
+      }
       try {
         const res = await this.http.request<T>({
           ...config,
