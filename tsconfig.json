@@ -42,5 +42,7 @@
     "skipLibCheck": true,
 
     "moduleResolution": "nodenext",
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "scripts", "data"]
 }
