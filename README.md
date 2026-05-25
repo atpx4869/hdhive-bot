@@ -542,6 +542,9 @@ API Key 管理：
 
 健壮性：
 - `repositories/bot-user.repository.ts` 暴露 `closeDb()`，`app.ts` 注册 `SIGINT / SIGTERM` 处理器：先 `bot.stop()` 退出长轮询，再 `closeDb()` 关闭 sqlite，再 `process.exit(0)`，避免 PM2 重启或容器停机时写入中断。
+- `handlers/callback/unlock-callbacks.ts` 入口加上 `if (parsed.type !== 'unlock') return false` 守卫。原先 `callback-router.ts` 用 `parsed as any` 把类型抹掉后直接传入，本模块又没做运行期类型判断，导致**管理员点 `/show_api_key` 的 key 按钮时**会误进解锁流程、取 `slug=undefined` 调用 HDHive 接口、最终回显「解锁失败 · 服务暂时不可用」。修复后 admin 回调可以正常落到 `handleAdminCallbacks` 渲染单 key 操作面板。
+- `services/unlock.service.ts` 把 HDHive 真实错误（HTTP 状态 / code / message）透传到 Telegram 回执，并在 `slug` 为空/字面量 `'undefined'` 时直接拦截，不再吞成一句通用「服务暂时不可用」。
+- `services/search.service.ts` 的 `toResourceCard` 在 `slug` 缺失时打印原始字段名快照（前 400 字节），便于在 HDHive 接口字段悄悄变化时第一时间发现。
 
 ---
 
