@@ -64,6 +64,13 @@ export function formatDate(iso: string | null | undefined): string {
   }
 }
 
+/** API Key 脱敏：长度 > 8 时显示首 4 末 4，否则首 1 末 1。null/空显示「未配置」。 */
+export function maskApiKey(key: string | null | undefined): string {
+  if (!key) return '未配置';
+  if (key.length <= 8) return `${key[0] ?? '*'}***${key[key.length - 1] ?? '*'}`;
+  return `${key.slice(0, 4)}****${key.slice(-4)}`;
+}
+
 export function formatVipText(isVip: boolean, expirationDate?: string): string {
   if (!isVip) return '普通用户';
   if (!expirationDate) return 'VIP';

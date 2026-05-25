@@ -545,6 +545,7 @@ API Key 管理：
 - `handlers/callback/unlock-callbacks.ts` 入口加上 `if (parsed.type !== 'unlock') return false` 守卫。原先 `callback-router.ts` 用 `parsed as any` 把类型抹掉后直接传入，本模块又没做运行期类型判断，导致**管理员点 `/show_api_key` 的 key 按钮时**会误进解锁流程、取 `slug=undefined` 调用 HDHive 接口、最终回显「解锁失败 · 服务暂时不可用」。修复后 admin 回调可以正常落到 `handleAdminCallbacks` 渲染单 key 操作面板。
 - `services/unlock.service.ts` 把 HDHive 真实错误（HTTP 状态 / code / message）透传到 Telegram 回执，并在 `slug` 为空/字面量 `'undefined'` 时直接拦截，不再吞成一句通用「服务暂时不可用」。
 - `services/search.service.ts` 的 `toResourceCard` 在 `slug` 缺失时打印原始字段名快照（前 400 字节），便于在 HDHive 接口字段悄悄变化时第一时间发现。
+- `/account`（`handlers/message/account.handler.ts` + `services/account.service.ts`）：(1) `getAccountProfile` 给 `user_meta` 子字段加空值兜底（`points / signin_days_total / share_num / is_activate`），避免上游字段缺失直接抛 TypeError；(2) `accountHandler` 把 HDHive 抛出的 `axios` 错误同 unlock 一样透出 `HTTP 状态 · code · message`，不再吞成「服务暂时不可用」；(3) 检测「activeKey 已不在主列表」（被删未清状态）时，回退展示首把 + 标注「active 已失效，已回退」+ `logger.warn`；(4) 把原本散落在 `account.handler.ts` 与 `api-key-config.service.ts` 的两份 `maskApiKey` 合并到 `utils/format.ts` 共享。
 
 ---
 

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { env } from '../config/env.js';
 import { botUserRepository } from '../repositories/bot-user.repository.js';
 import { logger } from '../utils/logger.js';
+import { maskApiKey } from '../utils/format.js';
 
 const PRIMARY_KEYS_SETTING = 'hdhive_api_keys';
 const FALLBACK_KEY_SETTING = 'hdhive_fallback_api_key';
@@ -26,12 +27,6 @@ function parseApiKeys(input: string): string[] {
 
 function uniqueKeys(keys: string[]): string[] {
   return [...new Set(keys)];
-}
-
-function maskApiKey(key: string | null): string {
-  if (!key) return '未配置';
-  if (key.length <= 8) return `${key[0] ?? '*'}***${key[key.length - 1] ?? '*'}`;
-  return `${key.slice(0, 4)}****${key.slice(-4)}`;
 }
 
 function readRuntimePrimaryKeys(): string[] {
