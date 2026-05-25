@@ -546,6 +546,7 @@ API Key 管理：
 - `services/unlock.service.ts` 把 HDHive 真实错误（HTTP 状态 / code / message）透传到 Telegram 回执，并在 `slug` 为空/字面量 `'undefined'` 时直接拦截，不再吞成一句通用「服务暂时不可用」。
 - `services/search.service.ts` 的 `toResourceCard` 在 `slug` 缺失时打印原始字段名快照（前 400 字节），便于在 HDHive 接口字段悄悄变化时第一时间发现。
 - `/account`（`handlers/message/account.handler.ts` + `services/account.service.ts`）：(1) `getAccountProfile` 给 `user_meta` 子字段加空值兜底（`points / signin_days_total / share_num / is_activate`），避免上游字段缺失直接抛 TypeError；(2) `accountHandler` 把 HDHive 抛出的 `axios` 错误同 unlock 一样透出 `HTTP 状态 · code · message`，不再吞成「服务暂时不可用」；(3) 检测「activeKey 已不在主列表」（被删未清状态）时，回退展示首把 + 标注「active 已失效，已回退」+ `logger.warn`；(4) 把原本散落在 `account.handler.ts` 与 `api-key-config.service.ts` 的两份 `maskApiKey` 合并到 `utils/format.ts` 共享。
+- `services/api-key-inspection.service.ts` 修正「VIP 等级误判」：原先把 `/api/open/me` 返回的 `403 VIP_REQUIRED` 一律贴成「普通账号」，但该错误既可能是账号本身不是 Premium，也可能是这把 API Key 在 HDHive 后台没勾 `vip` scope（账号本身可能是 Premium）。仅凭 `/me` 的 403 无法分辨，因此改为「🛡️ 等级未知」并在日志里逐 key 打印「真实 HTTP 状态 + code + message + 掩码 key」，便于排查到底是哪把 key 没开 scope。`ApiKeyInspectionResult.levelLabel / levelEmoji` 联合类型同步扩展。
 
 ---
 

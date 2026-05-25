@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { apiKeyConfigService } from './api-key-config.service.js';
 import { hdhiveClient } from '../clients/hdhive.client.js';
+import { logger } from '../utils/logger.js';
+import { maskApiKey } from '../utils/format.js';
 
 export type ApiKeyInspectionResult = {
   validStatus: '有效' | '待确认' | '无效';
   validEmoji: '✅' | '⚠️' | '❌';
-  levelLabel: '高级账号' | '普通账号' | '未知';
-  levelEmoji: '👑' | '🙂' | '❓';
+  levelLabel: '高级账号' | '普通账号' | '等级未知' | '未知';
+  levelEmoji: '👑' | '🙂' | '🛡️' | '❓';
 };
 
 export type ApiKeyOverallStatus = {
@@ -22,20 +24,32 @@ export const apiKeyInspectionService = {
   },
   async detectLevels(keys: string[]): Promise<ApiKeyInspectionResult[]> {
     return Promise.all(keys.map(async (key) => {
+      const masked = maskApiKey(key);
       try {
         const me = await hdhiveClient.getMeByApiKey(key);
+        const isVip = !!me.data.is_vip;
+        logger.info(
+          'ApiKeyInspection',
+          `key=${masked} status=200 is_vip=${isVip}`,
+        );
         return {
           validStatus: '有效',
           validEmoji: '✅',
-          levelLabel: me.data.is_vip ? '高级账号' : '普通账号',
-          levelEmoji: me.data.is_vip ? '👑' : '🙂',
+          levelLabel: isVip ? '高级账号' : '普通账号',
+          levelEmoji: isVip ? '👑' : '🙂',
         } satisfies ApiKeyInspectionResult;
       } catch (err) {
         if (axios.isAxiosError(err)) {
           const status = err.response?.status ?? null;
-          const code = err.response?.data?.code as string | undefined;
+          const code = (err.response?.data as { code?: string } | undefined)?.code;
+          const apiMsg = (err.response?.data as { message?: string; msg?: string } | undefined);
+          const msg = apiMsg?.message ?? apiMsg?.msg ?? err.message;
 
           if (code === 'INVALID_API_KEY' || code === 'DISABLED_API_KEY' || code === 'EXPIRED_API_KEY') {
+            logger.warn(
+              'ApiKeyInspection',
+              `key=${masked} status=${status ?? 'n/a'} code=${code} msg=${msg} → 无效`,
+            );
             return {
               validStatus: '无效',
               validEmoji: '❌',
@@ -44,15 +58,33 @@ export const apiKeyInspectionService = {
             } satisfies ApiKeyInspectionResult;
           }
 
-          // 只有明确命中 VIP_REQUIRED，才保守认为是普通账号。
+          // VIP_REQUIRED 可能是两种情况：
+          //   1) 账号本身不是 Premium
+          //   2) 这把 API Key 没勾选 vip scope（即使账号本身是 Premium）
+          // 仅凭 /api/open/me 的 403 无法分辨，因此这里不再贴「普通账号」，
+          // 改成「等级未知」并把真实状态写进日志，便于排查。
           if (status === 403 && code === 'VIP_REQUIRED') {
+            logger.warn(
+              'ApiKeyInspection',
+              `key=${masked} status=403 code=VIP_REQUIRED → 等级未知（vip scope 未开通或账号非 Premium）`,
+            );
             return {
               validStatus: '有效',
               validEmoji: '✅',
-              levelLabel: '普通账号',
-              levelEmoji: '🙂',
+              levelLabel: '等级未知',
+              levelEmoji: '🛡️',
             } satisfies ApiKeyInspectionResult;
           }
+
+          logger.warn(
+            'ApiKeyInspection',
+            `key=${masked} status=${status ?? 'n/a'} code=${code ?? 'n/a'} msg=${msg} → 待确认`,
+          );
+        } else {
+          logger.warn(
+            'ApiKeyInspection',
+            `key=${masked} non-axios err=${err instanceof Error ? err.message : String(err)} → 待确认`,
+          );
         }
         return {
           validStatus: '待确认',
