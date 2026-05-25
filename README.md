@@ -522,6 +522,25 @@ docker compose up -d --build
 ### 类型扩展
 - `TmdbCandidate` 增加 `posterPath?` 字段，预留候选海报展示能力（`tmdb.client.ts` 已回填 `poster_path`）。
 
+### 后续硬化（API Key 管理 / 白名单授权 / 健壮性）
+
+API Key 管理：
+- `setActiveKeyByIndex` 不再回写 `.env`，避免手动切换 Active 污染冷启动兜底；`.env` 中的 `DEFAULT_API_KEY` 始终只反映「主列表首把」，并且只在 `setPrimaryApiKeys`、`addPrimaryKey`（首把变化）、`replacePrimaryKeyByIndex`（index=0）、`deletePrimaryKeyByIndex`（删除的是首把）这几种确实变更首把的情况下才写。
+- `writeEnvDefaultApiKey` 改为 try/catch + `logger.warn`，`.env` 缺失或写入失败不再抛错，因为 sqlite 才是 source of truth。
+- `setPrimaryApiKeys('')` 不再静默返回 `[]`，改为返回 `{ ok: false, reason: 'empty' }`，命令端给出明确提示。
+- `hdhive.client.ts:requestWithApiKeyRotation` 候选 Key 列表去重（兜底 Key 与主列表重叠时不再重复尝试），并在重试之间加 `200ms × attempt` 退避，避免被远端瞬时限流连续打中。
+- 11 个 API Key 命令（`/set_api_key`、`/add_api_key`、`/del_api_key`、`/replace_api_key`、`/set_active_api_key`、`/set_api_mode`、`/set_fallback_api_key`、`/del_fallback_api_key`、`/set_api_key_note`、`/del_api_key_note`，以及参数错误提示）统一改用 `adminTemplate.buildApiKeyReply` / `buildApiKeyBadParam` 渲染：HTML + Icon + Divider + 品牌脚注，并修正 `/set_api_mode` 文案为「自动故障转移」。
+
+白名单授权：
+- `bot/register-handlers.ts` 新增全局 auth/元信息中间件：对非命令的自由文本短路游客（避免触发关键词搜索浪费 API），并对已知白名单用户的 `username / first_name / last_name` 在每次说话时做幂等回填（仅在字段变化时写库）。
+- 移除 `bot_users.enabled` 死代码：`auth.service` 不再检查 `enabled`，`botUserRepository.listEnabledUsers` 改名 `listUsers` 并去掉 `WHERE enabled = 1`，`BotUser` / `AddBotUserInput` 类型剔除 `enabled` 字段；数据库 schema 保留该列（DEFAULT 1）以兼容旧库。
+- `/user_add` 新增「回复目标用户的某条消息后发送 /user_add」用法，自动捕获 `username / first_name / last_name`；同时也支持 `/user_add <id>` 显式参数。
+- `config/env.ts` 中 `BOT_ADMIN_IDS` 解析增加纯数字校验：非数字条目会被丢弃并 `console.warn`，整列表为空也会单独 `console.warn`，避免「手误一个字符整个 admin 列表静默失效」。
+- `services/session.service.ts` 的 `getCandidateSession` / `getResultSession` 接受可选 `ownerUserId`：与 session 的 `telegramUserId` 不一致时返回 `null` 并 `logger.warn`，防止跨用户回调劫持；`search-callbacks.ts` 的全部 session 读取已传入 `telegramUserId`。
+
+健壮性：
+- `repositories/bot-user.repository.ts` 暴露 `closeDb()`，`app.ts` 注册 `SIGINT / SIGTERM` 处理器：先 `bot.stop()` 退出长轮询，再 `closeDb()` 关闭 sqlite，再 `process.exit(0)`，避免 PM2 重启或容器停机时写入中断。
+
 ---
 
 ## 18. License
