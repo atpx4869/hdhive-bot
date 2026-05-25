@@ -28,9 +28,16 @@ export const apiKeyInspectionService = {
       try {
         const me = await hdhiveClient.getMeByApiKey(key);
         const isVip = !!me.data.is_vip;
+        // 诊断：把 HDHive /me 实际返回的字段名打印出来，便于发现 vip 状态被放在
+        // 非约定字段里（例如 vip_level / user_meta.is_vip 等）。
+        const d = me.data as unknown as Record<string, unknown>;
+        const topKeys = Object.keys(d).join(',');
+        const metaKeys = d.user_meta && typeof d.user_meta === 'object'
+          ? Object.keys(d.user_meta as Record<string, unknown>).join(',')
+          : '(none)';
         logger.info(
           'ApiKeyInspection',
-          `key=${masked} status=200 is_vip=${isVip}`,
+          `key=${masked} status=200 is_vip=${isVip} vip_expiration_date=${String(d.vip_expiration_date ?? 'n/a')} topKeys=[${topKeys}] user_meta=[${metaKeys}]`,
         );
         return {
           validStatus: '有效',
