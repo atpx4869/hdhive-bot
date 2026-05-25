@@ -420,6 +420,8 @@ pm2 logs hdhive-bot --lines 100
 - 非私聊场景尝试解锁
 - HDHive 接口暂时异常
 
+> 解锁失败时，bot 会把 HDHive 返回的真实 `HTTP 状态 · code · message` 透出来（仅 `INSUFFICIENT_POINTS` 仍归类为"积分不足"），同时在日志里打印 `UnlockService` 警告便于排查。
+
 ---
 
 ## 14. 更新部署
