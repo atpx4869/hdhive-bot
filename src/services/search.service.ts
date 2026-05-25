@@ -1,6 +1,7 @@
 import { tmdbClient } from '../clients/tmdb.client.js';
 import { hdhiveClient } from '../clients/hdhive.client.js';
 import type { TmdbCandidate, ResourceCard, PaginatedResult, PagePresentation } from '../types/resource.js';
+import { logger } from '../utils/logger.js';
 import {
   formatResolution,
   formatShareSize,
@@ -15,6 +16,13 @@ import {
 export const PAGE_SIZE = 10;
 
 function toResourceCard(r: Awaited<ReturnType<typeof hdhiveClient.getResourcesByTmdb>>[number]): ResourceCard {
+  if (!r.slug) {
+    // 诊断：把整个原始对象 key 打出来，确认 HDHive 字段名变化或丢字段
+    logger.warn(
+      'SearchService',
+      `resource missing slug, raw keys=${Object.keys(r).join(',')} sample=${JSON.stringify(r).slice(0, 400)}`,
+    );
+  }
   return {
     slug: r.slug,
     title: r.title,

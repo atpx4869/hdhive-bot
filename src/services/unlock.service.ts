@@ -5,6 +5,10 @@ import axios from 'axios';
 
 export const unlockService = {
   async unlock(slug: string): Promise<UnlockResultView> {
+    if (!slug || slug === 'undefined' || slug === 'null') {
+      logger.warn('UnlockService', `unlock blocked: empty/invalid slug=${String(slug)}`);
+      return { status: 'error', message: '资源标识丢失，请返回列表重新点击解锁' };
+    }
     try {
       const res = await hdhiveClient.unlockResource(slug);
       const d = res.data;
